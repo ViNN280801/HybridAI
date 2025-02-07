@@ -20,16 +20,15 @@ import {
   deleteDoc,
   doc,
   updateDoc,
+  /* addDoc */
 } from "firebase/firestore";
 
-// Define a Message interface
 interface Message {
   id: string;
   content: string;
   timestamp: Date;
 }
 
-// Define a Chat interface using the Message interface
 interface Chat {
   id: string;
   name: string;
@@ -41,7 +40,6 @@ const ChatHistory = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
 
-  // Fetch chat history from Firestore
   const fetchChats = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "chats"));
@@ -82,33 +80,59 @@ const ChatHistory = () => {
       console.error("Error updating chat:", error);
     }
   };
+  /* 
+  const addChat = async () => {
+    try {
+      const newChat: Chat = {
+        id: "",
+        name: "New Chat",
+        messages: [],
+      };
+      const docRef = await addDoc(collection(db, "chats"), newChat);
+      newChat.id = docRef.id;
+      setChats([...chats, newChat]);
+    } catch (error) {
+      console.error("Error adding chat:", error);
+    }
+  };
+
+  const renameChat = async (id: string, newName: string) => {
+    try {
+      await updateDoc(doc(db, "chats", id), { name: newName });
+      fetchChats();
+    } catch (error) {
+      console.error("Error renaming chat:", error);
+    }
+  };
+
+  const deleteChat = async (id: string) => {
+    try {
+      await deleteDoc(doc(db, "chats", id));
+      fetchChats();
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+    }
+  }; */
 
   return (
-    <Box sx={{ mb: 2 }}>
+    <Box>
       <List>
         {chats.map((chat) => (
-          <ListItem
-            key={chat.id}
-            secondaryAction={
-              <>
-                <IconButton edge="end" onClick={() => handleEdit(chat)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton edge="end" onClick={() => handleDelete(chat.id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </>
-            }
-          >
+          <ListItem key={chat.id}>
+            <ListItemText primary={chat.name} />
+            <IconButton onClick={() => handleEdit(chat)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton onClick={() => handleDelete(chat.id)}>
+              <DeleteIcon />
+            </IconButton>
             {editingId === chat.id ? (
               <TextField
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 onBlur={() => handleUpdate(chat.id)}
               />
-            ) : (
-              <ListItemText primary={chat.name} />
-            )}
+            ) : null}
           </ListItem>
         ))}
       </List>

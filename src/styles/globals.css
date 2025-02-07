@@ -20,4 +20,53 @@ body {
   color: var(--foreground);
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  min-height: 100vh;
+  margin: 0;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chat-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: auto;
+}
+
+.chat-history {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.sidebar {
+  width: 300px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.theme-switch {
+  cursor: pointer;
+}
+
+.new-chat-button,
+.account-button,
+.logout-button {
+  width: 100%;
+  margin-top: 10px;
 }

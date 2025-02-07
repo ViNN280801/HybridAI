@@ -9,9 +9,9 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <div className="flex">
+    <div id="root">
       <Sidebar />
-      <div className="flex-1 p-4">{children}</div>
+      <main className="chat-container">{children}</main>
     </div>
   );
 };
