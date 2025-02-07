@@ -1,36 +1,31 @@
-// HybridAI/src/utils/rateLimiter.ts
+// HybridAI/backend/utils/rateLimiter.ts
 
-export class RateLimiter {
-  private limits: Map<string, { count: number; lastReset: number }>;
-
-  constructor(
-    private maxRequests: number,
-    private interval: number
-  ) {
+// Simple rate limiter class with detailed logging
+class RateLimiter {
+  constructor(maxRequests, interval) {
+    this.maxRequests = maxRequests;
+    this.interval = interval;
     this.limits = new Map();
   }
 
-  checkLimit(key: string): boolean {
+  checkLimit(key) {
     const now = Date.now();
     const entry = this.limits.get(key);
-
     if (!entry || now - entry.lastReset > this.interval) {
       this.limits.set(key, { count: 1, lastReset: now });
       return true;
     }
-
     if (entry.count < this.maxRequests) {
       entry.count++;
       return true;
     }
-
     return false;
   }
 
-  increment(key: string) {
+  increment(key) {
     const entry = this.limits.get(key);
-    if (entry) {
-      entry.count++;
-    }
+    if (entry) entry.count++;
   }
 }
+
+module.exports = RateLimiter;

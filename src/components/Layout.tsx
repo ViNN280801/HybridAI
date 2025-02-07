@@ -1,7 +1,7 @@
 // HybridAI/src/components/Layout.tsx
 
 import React from "react";
-import Sidebar from "@/components/Sidebar";
+import Sidebar from "./Sidebar";
 
 interface LayoutProps {
   children: React.ReactNode;

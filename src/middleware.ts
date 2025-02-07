@@ -3,7 +3,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-import { RateLimiter } from "../backend/utils/rateLimiter";
+import RateLimiter from "@/utils/rateLimiter";
 const globalRateLimiter = new RateLimiter(100, 60_000);
 
 // Middleware to enhance security and prevent attacks
