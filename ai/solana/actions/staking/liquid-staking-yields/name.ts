@@ -1,1 +1,0 @@
-export const SOLANA_LIQUID_STAKING_YIELDS_NAME = "solana_liquid_staking_yields";

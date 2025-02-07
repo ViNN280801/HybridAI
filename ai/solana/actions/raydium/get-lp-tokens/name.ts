@@ -1,1 +1,0 @@
-export const SOLANA_GET_LP_TOKENS_NAME = "get-lp-tokens";

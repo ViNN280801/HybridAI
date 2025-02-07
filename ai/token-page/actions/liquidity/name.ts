@@ -1,1 +1,0 @@
-export const SOLANA_TOKEN_PAGE_LIQUIDITY_NAME = "token-liquidity-analysis";

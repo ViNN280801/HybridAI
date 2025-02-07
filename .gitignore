@@ -1,40 +1,43 @@
-# Dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-*.lock
-
-# Testing
-/coverage
-
-# Next.js
-/.next/
-/out/
-
-# Production
-/build
-
-# Misc
-.DS_Store
-*.pem
-
-# Debug
+# Logs
+logs
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.pnpm-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Node files
+node_modules
+dist
+dist-ssr
+*.local
 
-# Vercel
-.vercel
+# Yarn files
+*yarn*
 
-# Typescript
-*.tsbuildinfo
-next-env.d.ts
+# Package lock files
+package-lock.json
+
+# Next.js files
+.next
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Bash scripts
+*.sh
+
+# Text files
+*.txt
+
+# Environment vars
+.env
