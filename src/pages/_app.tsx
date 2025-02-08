@@ -9,10 +9,7 @@ import "@/styles/globals.css";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/context/theme";
 import { Button } from "@/components/ui/button";
-import { SOLANA_MAINNET, SUPPORTED_WALLETS } from "@/config/chains";
-
-// Define local Chain type, listing supported chains.
-type Chain = "solana" | "ethereum" | "polygon";
+import { SOLANA_MAINNET } from "@/config/chains";
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -38,8 +35,9 @@ export const WalletButton = () => {
       if (user && user.wallet) {
         await logout();
       } else {
-        // Call login with the wallet method (with type assertion workaround)
-        await (login as any)({ method: "wallet" });
+        await (
+          login as unknown as (options: { method: string }) => Promise<void>
+        )({ method: "wallet" });
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
@@ -82,8 +80,25 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           embeddedWallets: {
             createOnLogin: "users-without-wallets",
           },
-          supportedChains: [SOLANA_MAINNET] as any,
-          defaultChain: SOLANA_MAINNET as any,
+          supportedChains: [
+            {
+              id: SOLANA_MAINNET.id,
+              name: SOLANA_MAINNET.name,
+              rpcUrls: {
+                default: { http: [SOLANA_MAINNET.rpcUrls.default] },
+                privyWalletOverride: { http: [SOLANA_MAINNET.rpcUrls.default] },
+              },
+              nativeCurrency: SOLANA_MAINNET.nativeCurrency,
+            },
+          ],
+          defaultChain: {
+            ...SOLANA_MAINNET,
+            rpcUrls: {
+              default: { http: [SOLANA_MAINNET.rpcUrls.default] },
+              privyWalletOverride: { http: [SOLANA_MAINNET.rpcUrls.default] },
+            },
+            nativeCurrency: SOLANA_MAINNET.nativeCurrency,
+          },
         }}
       >
         <QueryClientProvider client={queryClient}>

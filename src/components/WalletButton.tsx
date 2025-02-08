@@ -4,7 +4,13 @@
 
 import { Button } from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
-import { SUPPORTED_WALLETS } from "@/config/chains";
+import "@privy-io/react-auth";
+
+declare module "@privy-io/react-auth" {
+  interface PrivyContextInterface {
+    login: (options: { method: string }) => Promise<void>;
+  }
+}
 
 export const WalletButton = () => {
   const { user, login, logout, ready } = usePrivy();
@@ -18,7 +24,9 @@ export const WalletButton = () => {
       if (user && user.wallet) {
         await logout();
       } else {
-        await (login as any)();
+        await (
+          login as unknown as (options: { method: string }) => Promise<void>
+        )({ method: "wallet" });
       }
     } catch (error) {
       console.error("Error connecting wallet:", error);
