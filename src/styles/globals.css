@@ -1,0 +1,111 @@
+/* HybridAI/src/styles/globals.css */
+
+/* Import Tailwind base styles */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Define CSS variables for light and dark themes */
+:root {
+  --background-primary: #ffffff;
+  --background-secondary: #f7f9fc;
+  --foreground: #171717;
+  --accent-color: #6366f1;
+  --error-color: #ff4d4f;
+}
+
+.dark {
+  --background-primary: #0a0a0a;
+  --background-secondary: #1f2937;
+  --foreground: #ededed;
+}
+
+/* Global styles */
+body {
+  background-color: var(--background-primary);
+  color: var(--foreground);
+  background: var(--background-primary);
+  font-family: "Inter", sans-serif;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
+  margin: 0;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+input,
+textarea {
+  font-family: inherit;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
+h1 {
+  color: #ffffff;
+}
+
+/* Container utility */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Custom shadow class */
+.shadow-custom {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient background classes */
+.bg-gradient {
+  background: var(--gradient-light);
+}
+
+.dark .bg-gradient {
+  background: var(--gradient-dark);
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}

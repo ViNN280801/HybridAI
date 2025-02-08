@@ -1,7 +1,11 @@
+// HybridAI/next.config.ts
+
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["twitter-api-v2"],
+  images: {
+    domains: ["static.vecteezy.com", "i.tracxn.com", "logowik.com"],
+  },
 };
 
 export default nextConfig;

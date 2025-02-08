@@ -1,1 +1,0 @@
-export const SOLANA_TRANSFER_NAME = "solana_transfer";

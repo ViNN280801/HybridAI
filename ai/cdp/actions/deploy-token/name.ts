@@ -1,1 +1,0 @@
-export const DEPLOY_TOKEN_NAME = "deploy_token";

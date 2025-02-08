@@ -1,1 +1,0 @@
-export const TRANSFER_NAME = "transfer";

@@ -1,1 +1,0 @@
-export const DEPLOY_NFT_NAME = "deploy_nft";

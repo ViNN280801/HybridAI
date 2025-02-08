@@ -1,1 +1,0 @@
-export const SOLANA_WITHDRAW_LIQUIDITY_NAME = "solana_withdraw_liquidity";

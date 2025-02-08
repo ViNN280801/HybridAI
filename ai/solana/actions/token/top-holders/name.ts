@@ -1,1 +1,0 @@
-export const SOLANA_TOP_HOLDERS_NAME = "top-holders";

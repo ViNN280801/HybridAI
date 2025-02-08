@@ -1,1 +1,0 @@
-export const REQUEST_FAUCET_FUNDS_NAME = "request_faucet_funds";

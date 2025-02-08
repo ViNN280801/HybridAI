@@ -1,1 +1,0 @@
-export const TRADE_NAME = "trade";

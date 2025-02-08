@@ -1,1 +1,0 @@
-export const SOLANA_ALL_BALANCES_NAME = "solana_all_balances";

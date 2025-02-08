@@ -1,1 +1,0 @@
-export const TWITTER_SEARCH_RECENT_PROMPT = `Search for recent tweets. given a specific keyword.`;
