@@ -2,12 +2,17 @@
 
 import type { AppProps } from "next/app";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PrivyProvider } from "@privy-io/react-auth";
+import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "@/styles/globals.css";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/context/theme";
+import { Button } from "@/components/ui/button";
+import { SOLANA_MAINNET, SUPPORTED_WALLETS } from "@/config/chains";
+
+// Define local Chain type, listing supported chains.
+type Chain = "solana" | "ethereum" | "polygon";
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -19,6 +24,41 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+export const WalletButton = () => {
+  const { user, login, logout, ready } = usePrivy();
+
+  const handleWalletConnection = async () => {
+    if (!ready) {
+      console.error("Privy is not ready");
+      return;
+    }
+    try {
+      // If wallet is connected, we log out, otherwise use the wallet method to login
+      if (user && user.wallet) {
+        await logout();
+      } else {
+        // Call login with the wallet method (with type assertion workaround)
+        await (login as any)({ method: "wallet" });
+      }
+    } catch (error) {
+      console.error("Error connecting wallet:", error);
+    }
+  };
+
+  return (
+    <Button
+      variant="outline"
+      className="w-full justify-start"
+      onClick={handleWalletConnection}
+      disabled={!ready}
+    >
+      {user?.wallet?.address
+        ? `${user.wallet.address.slice(0, 6)}...${user.wallet.address.slice(-4)}`
+        : "Connect Wallet"}
+    </Button>
+  );
+};
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
@@ -37,10 +77,13 @@ export default function MyApp({ Component, pageProps }: AppProps) {
           appearance: {
             theme: "dark",
             accentColor: "#6366f1",
+            walletList: ["phantom"],
           },
           embeddedWallets: {
             createOnLogin: "users-without-wallets",
           },
+          supportedChains: [SOLANA_MAINNET] as any,
+          defaultChain: SOLANA_MAINNET as any,
         }}
       >
         <QueryClientProvider client={queryClient}>
