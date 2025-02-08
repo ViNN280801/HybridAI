@@ -20,7 +20,6 @@ import {
   deleteDoc,
   doc,
   updateDoc,
-  /* addDoc */
 } from "firebase/firestore";
 
 interface Message {

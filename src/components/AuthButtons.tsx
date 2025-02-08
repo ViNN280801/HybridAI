@@ -65,7 +65,7 @@ const AuthButtons = () => {
         onClick={handleConnectWallet}
         disabled={loading}
       >
-        Connect Wallet
+        Login
       </Button>
     </Box>
   );

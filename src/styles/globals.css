@@ -1,72 +1,111 @@
 /* HybridAI/src/styles/globals.css */
 
+/* Import Tailwind base styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Define CSS variables for light and dark themes */
 :root {
-  --background: #ffffff;
+  --background-primary: #ffffff;
+  --background-secondary: #f7f9fc;
   --foreground: #171717;
+  --accent-color: #6366f1;
+  --error-color: #ff4d4f;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+  --background-primary: #0a0a0a;
+  --background-secondary: #1f2937;
+  --foreground: #ededed;
 }
 
+/* Global styles */
 body {
+  background-color: var(--background-primary);
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-  display: flex;
-  min-height: 100vh;
+  background: var(--background-primary);
+  font-family: "Inter", sans-serif;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease;
   margin: 0;
 }
 
-#root {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-.chat-container {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  padding: 20px;
-  box-sizing: border-box;
+a:hover {
+  text-decoration: underline;
 }
 
-.chat-input {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: auto;
-}
-
-.chat-history {
-  flex: 1;
-  overflow-y: auto;
-  margin-bottom: 20px;
-}
-
-.sidebar {
-  width: 300px;
-  background: var(--background);
-  color: var(--foreground);
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.theme-switch {
+button {
+  font-family: inherit;
   cursor: pointer;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.new-chat-button,
-.account-button,
-.logout-button {
+input,
+textarea {
+  font-family: inherit;
+  transition:
+    border-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Inter", sans-serif;
+  margin: 0;
+}
+
+h1 {
+  color: #ffffff;
+}
+
+/* Container utility */
+.container {
   width: 100%;
-  margin-top: 10px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Custom shadow class */
+.shadow-custom {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Gradient background classes */
+.bg-gradient {
+  background: var(--gradient-light);
+}
+
+.dark .bg-gradient {
+  background: var(--gradient-dark);
+}
+
+/* Custom scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
 }

@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "@/styles/globals.css";
 import { useEffect, useState } from "react";
+import { ThemeProvider } from "@/context/theme";
 
 // Initialize React Query client
 const queryClient = new QueryClient({
@@ -28,25 +29,27 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   if (!mounted) return null;
 
   return (
-    <PrivyProvider
-      appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-      config={{
-        loginMethods: ["email", "wallet", "google", "twitter"],
-        appearance: {
-          theme: "dark",
-          accentColor: "#6366f1",
-        },
-        embeddedWallets: {
-          createOnLogin: "users-without-wallets",
-        },
-      }}
-    >
-      <QueryClientProvider client={queryClient}>
-        <ErrorBoundary>
-          <Component {...pageProps} />
-        </ErrorBoundary>
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </PrivyProvider>
+    <ThemeProvider>
+      <PrivyProvider
+        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
+        config={{
+          loginMethods: ["email", "wallet", "google", "twitter"],
+          appearance: {
+            theme: "dark",
+            accentColor: "#6366f1",
+          },
+          embeddedWallets: {
+            createOnLogin: "users-without-wallets",
+          },
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <ErrorBoundary>
+            <Component {...pageProps} />
+          </ErrorBoundary>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
+      </PrivyProvider>
+    </ThemeProvider>
   );
 }

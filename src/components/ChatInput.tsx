@@ -3,80 +3,122 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import {
-  TextField,
-  Button,
-  /* MenuItem, */ Box /* Tooltip */,
-} from "@mui/material";
-import axios from "axios";
+import { Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { usePrivy } from "@privy-io/react-auth";
+import { ModelSelector } from "@/components/ModelSelector";
+import { useStore } from "@/lib/store";
+import axios from "axios";
 
-const aiTemplates = ["Request #1", "Request #2", "Request #3"];
+const aiTemplates = [
+  "Analyze latest crypto market trends",
+  "Explain DeFi yield farming",
+  "Compare L1 blockchain protocols",
+  "Perform a risk assessment on cross-chain interoperability solutions",
+  "Evaluate the impact of AI-driven trading algorithms on market liquidity",
+  "Provide a deep technical comparison between Solana and Ethereum's consensus mechanisms",
+  "Simulate a tokenomics model for a hypothetical Web3 startup",
+];
 
 const ChatInput = () => {
-  const { user } = usePrivy();
   const [message, setMessage] = useState("");
-  const [selectedModel, setSelectedModel] = useState("OpenAI");
-
-  const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["aiRequest", message, selectedModel],
-    queryFn: async () => {
-      const response = await axios.post("/api/ai", {
-        query: message,
-        model: selectedModel,
-        walletAddress: user?.wallet?.address,
-      });
-      return response.data.response;
-    },
-    enabled: false,
-    retry: 2,
-  });
+  const [loading, setLoading] = useState(false);
+  const { user } = usePrivy();
+  const { selectedModel, addMessage, activeChat } = useStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    refetch();
-    setMessage("");
+    if (!message) {
+      console.error("Error: message is empty. Enter text please.");
+      return;
+    }
+
+    if (!user) {
+      console.error("Error: user is not authorized.");
+      return;
+    }
+
+    if (!activeChat) {
+      console.error("Error: active chat is missing.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const userMessage = { role: "user" as const, content: message };
+      addMessage(activeChat, userMessage);
+
+      const response = await axios.post("/api/ai", {
+        query: message,
+        model: selectedModel,
+        walletAddress: user.wallet?.address || "N/A",
+      });
+
+      const aiResponse = {
+        role: "assistant" as const,
+        content: response.data.response || "No response from AI.",
+      };
+
+      addMessage(activeChat, aiResponse);
+    } catch (error) {
+      console.error("Error fetching AI response:", error);
+      addMessage(activeChat, {
+        role: "assistant",
+        content: "Error fetching response.",
+      });
+    } finally {
+      setLoading(false);
+      setMessage("");
+    }
   };
 
   return (
-    <Box className="chat-container">
-      <Box className="chat-history">{/* Display chat history here */}</Box>
-      <form onSubmit={handleSubmit} className="chat-input">
-        <TextField
-          label="Type your message..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          disabled={!user}
-          fullWidth
-        />
-        <Button variant="contained" type="submit" disabled={!user}>
-          Send
-        </Button>
-        <select
-          value={selectedModel}
-          onChange={(e) => setSelectedModel(e.target.value)}
-        >
-          <option value="OpenAI">ChatGPT (GPT-4 Turbo)</option>
-          <option value="DeepSeek">DeepSeek</option>
-          <option value="Claude 3.5">Claude 3.5</option>
-          <option value="Gemini">Gemini</option>
-        </select>
-        {aiTemplates.map((template, idx) => (
+    <div className="w-full max-w-4xl mx-auto px-4 pb-6 space-y-4">
+      {!user && (
+        <div className="text-center p-8 rounded-xl bg-gradient-to-b from-background to-muted/50">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-500 bg-clip-text text-transparent mb-4">
+            How can We help you?
+          </h1>
+          <p className="text-muted-foreground mb-8">
+            Smarter Solutions, Powered by Technology and Trust
+          </p>
+        </div>
+      )}
+
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {aiTemplates.map((template) => (
           <Button
-            key={idx}
+            key={template}
+            variant="outline"
+            className="shrink-0 rounded-full px-4"
             onClick={() => setMessage(template)}
-            variant="outlined"
           >
             {template}
           </Button>
         ))}
-        {isLoading && <div>Processing your request...</div>}
-        {error && <div>{(error as Error).message}</div>}
-        {data && <div>AI Response: {data}</div>}
+      </div>
+
+      <form onSubmit={handleSubmit} className="relative flex gap-2">
+        <ModelSelector />
+        <Input
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder="Message HybridAI..."
+          className="pr-14 h-14 rounded-2xl shadow-lg flex-1"
+          disabled={!user || loading}
+        />
+        <Button
+          type="submit"
+          size="icon"
+          className="h-10 w-10 rounded-xl bg-accent hover:bg-accent/90"
+          disabled={!user || !message}
+        >
+          <Send className="h-5 w-5" />
+        </Button>
       </form>
-    </Box>
+    </div>
   );
 };
 
