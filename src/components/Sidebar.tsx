@@ -3,7 +3,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   MessageSquare,
   Plus,
@@ -23,7 +22,6 @@ import RenameChatModal from "@/components/RenameChatModal";
 import { useTheme } from "@/context/theme";
 
 const Sidebar = () => {
-  const pathname = usePathname();
   const {
     chats,
     createChat,
