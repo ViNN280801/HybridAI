@@ -13,13 +13,13 @@ import {
   Sun,
 } from "lucide-react";
 import { IconButton, Menu, MenuItem } from "@mui/material";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useStore } from "@/lib/store";
 import { WalletButton } from "./WalletButton";
 import { useState } from "react";
 import RenameChatModal from "@/components/RenameChatModal";
-import { useTheme } from "@/context/theme";
+import { useTheme } from "@/context/useTheme";
 
 const Sidebar = () => {
   const {

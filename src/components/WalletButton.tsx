@@ -2,7 +2,7 @@
 
 "use client";
 
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { usePrivy } from "@privy-io/react-auth";
 import "@privy-io/react-auth";
 

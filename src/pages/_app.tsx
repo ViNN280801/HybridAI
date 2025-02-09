@@ -8,7 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "@/styles/globals.css";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/context/theme";
-import { Button } from "@/components/ui/button";
+import Button from "@/components/ui/button";
 import { SOLANA_MAINNET } from "@/config/chains";
 
 // Initialize React Query client

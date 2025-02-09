@@ -28,7 +28,8 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "backend/utils/rateLimiter.js",
-    "src/types/next-auth.d.ts"
+    "src/types/next-auth.d.ts",
+    "next.config.js"
   ],
   "exclude": ["node_modules"]
 }
