@@ -15,6 +15,7 @@ dist-ssr
 
 # Yarn files
 *yarn*
+!yarn.lock
 
 # Package lock files
 package-lock.json
