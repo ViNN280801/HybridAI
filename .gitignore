@@ -41,3 +41,4 @@ package-lock.json
 
 # Environment vars
 .env
+!.env.example
