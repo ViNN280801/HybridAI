@@ -1,4 +1,7 @@
+// HybridAI/src/pages/test-page.tsx
+
 import Link from "next/link";
+import Image from "next/image";
 
 export default function TestPage() {
   return (
@@ -63,11 +66,26 @@ export default function TestPage() {
         </header>
 
         <div className="suggestions">
-          {[...Array(4)].map((_, i) => (
-            <a key={i} href="#" className="suggestion-item">
-              <span className="material-symbols-rounded">icon_{i}</span>
+          {[
+            { id: "hybrid", title: "Hybrid.AI" },
+            { id: "claude", icon: "claude_3.5_logo.png", title: "Claude 3.5" },
+            { id: "chatgpt", icon: "chatgpt_logo.png", title: "ChatGPT" },
+            { id: "gemini", icon: "gemini_logo.png", title: "Gemini" },
+          ].map((item) => (
+            <a key={item.id} href="#" className="suggestion-item">
+              {item.icon ? (
+                <Image
+                  src={`/${item.icon}`}
+                  alt={item.title}
+                  className="w-6 h-6 object-contain mr-3"
+                  width={24}
+                  height={24}
+                />
+              ) : (
+                <span className="text-lg font-bold mr-3">{item.title}</span>
+              )}
               <div className="suggestion-content">
-                <h3>Placeholder {i + 1}</h3>
+                <h3>{item.title}</h3>
                 <p>Sample description</p>
               </div>
             </a>
