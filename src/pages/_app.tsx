@@ -1,26 +1,13 @@
 // HybridAI/src/pages/_app.tsx
 
 import type { AppProps } from "next/app";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
-import ErrorBoundary from "@/components/ErrorBoundary";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { usePrivy } from "@privy-io/react-auth";
 import "@/styles/globals.css";
 import { useEffect, useState } from "react";
 import { ThemeProvider } from "@/context/theme";
 import Button from "@/components/ui/button";
-import { SOLANA_MAINNET } from "@/config/chains";
-
-// Initialize React Query client
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 5 * 60 * 1000, // 5 mins
-      refetchOnWindowFocus: false,
-      retry: 2,
-    },
-  },
-});
+import Head from "next/head";
+import Link from "next/link";
 
 export const WalletButton = () => {
   const { user, login, logout, ready } = usePrivy();
@@ -67,47 +54,16 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   if (!mounted) return null;
 
   return (
-    <ThemeProvider>
-      <PrivyProvider
-        appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
-        config={{
-          loginMethods: ["email", "wallet", "google", "twitter"],
-          appearance: {
-            theme: "dark",
-            accentColor: "#6366f1",
-            walletList: ["phantom"],
-          },
-          embeddedWallets: {
-            createOnLogin: "users-without-wallets",
-          },
-          supportedChains: [
-            {
-              id: SOLANA_MAINNET.id,
-              name: SOLANA_MAINNET.name,
-              rpcUrls: {
-                default: { http: [SOLANA_MAINNET.rpcUrls.default] },
-                privyWalletOverride: { http: [SOLANA_MAINNET.rpcUrls.default] },
-              },
-              nativeCurrency: SOLANA_MAINNET.nativeCurrency,
-            },
-          ],
-          defaultChain: {
-            ...SOLANA_MAINNET,
-            rpcUrls: {
-              default: { http: [SOLANA_MAINNET.rpcUrls.default] },
-              privyWalletOverride: { http: [SOLANA_MAINNET.rpcUrls.default] },
-            },
-            nativeCurrency: SOLANA_MAINNET.nativeCurrency,
-          },
-        }}
-      >
-        <QueryClientProvider client={queryClient}>
-          <ErrorBoundary>
-            <Component {...pageProps} />
-          </ErrorBoundary>
-          <ReactQueryDevtools initialIsOpen={false} />
-        </QueryClientProvider>
-      </PrivyProvider>
-    </ThemeProvider>
+    <>
+      <Head>
+        <Link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
+      </Head>
+      <ThemeProvider>
+        <Component {...pageProps} />
+      </ThemeProvider>
+    </>
   );
 }
