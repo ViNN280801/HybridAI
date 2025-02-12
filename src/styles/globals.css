@@ -47,6 +47,8 @@
   --scrollbar-color: var(--dark-scrollbar-color);
   --chat-bg: var(--dark-chat-bg);
   --user-chat-bg: var(--dark-user-chat-bg);
+  --gradient-start: #3b82f6;
+  --gradient-end: #8b5cf6;
 }
 
 /* fallback */
@@ -251,6 +253,7 @@ body {
 .container {
   margin-left: 260px;
   transition: margin-left 0.3s ease;
+  padding-top: 100px;
 }
 
 .container.sidebar-collapsed {
@@ -646,5 +649,42 @@ body {
 .container {
   margin-left: 260px;
   transition: margin-left 0.3s ease;
-  padding-top: 72px; /* Add space for controls */
+  padding-top: 100px;
+}
+
+.gradient-text {
+  background: linear-gradient(45deg, #2a0b45, #3b28cc, #4285f4, #8ed6ff);
+  background-size: 300% 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: 600;
+  animation: gradient-flow 8s ease infinite;
+}
+
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.central-controls {
+  position: fixed;
+  top: 16px;
+  left: 280px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 1000;
+  transition: left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .container .central-controls {
+  left: 84px;
 }

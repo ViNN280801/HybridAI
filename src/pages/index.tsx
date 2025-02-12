@@ -7,14 +7,13 @@ import CentralWidget from "@/components/CentralWidget";
 export default function HomePage() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-  const toggleSidebar = () => {
-    setIsSidebarCollapsed(!isSidebarCollapsed);
-  };
-
   return (
     <>
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={toggleSidebar} />
-      <CentralWidget />
+      <Sidebar isCollapsed={isSidebarCollapsed} />
+      <CentralWidget
+        isCollapsed={isSidebarCollapsed}
+        onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
     </>
   );
 }
