@@ -3,7 +3,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ["static.vecteezy.com", "i.tracxn.com", "logowik.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "fonts.gstatic.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "*.googleapis.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
   },
   experimental: {},
 };
