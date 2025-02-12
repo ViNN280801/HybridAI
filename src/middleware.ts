@@ -4,7 +4,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 import RateLimiter from "@/utils/rateLimiter";
-const globalRateLimiter = new RateLimiter(100, 60_000);
+const globalRateLimiter = new RateLimiter();
 
 // Middleware to enhance security and prevent attacks
 export async function middleware(req: NextRequest) {

@@ -4,15 +4,16 @@ on:
   push:
     branches: [main, develop]
   pull_request:
-    branches: [main]
+    branches: [main, develop]
 
 jobs:
-  lint-and-build:
-    name: Lint & Build
+  lint-build-test:
+    name: Lint, Build and Test with Node.js ${{ matrix.node-version }}
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        node-version: [20.x]
+        node-version: [20.x, 21.x, 22.x]
 
     steps:
       - name: Checkout code
