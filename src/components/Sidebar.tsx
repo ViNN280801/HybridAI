@@ -44,11 +44,21 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
 
       <div className="sidebar-footer">
         <div className="social-links">
-          <a href="#" className="social-link">
+          <a
+            href="https://x.com/thehybridai?s=21"
+            className="social-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <span className="material-symbols-rounded">flutter_dash</span>
             <span className="social-text">Follow Us</span>
           </a>
-          <a href="#" className="social-link">
+          <a
+            href="https://discord.gg/JKmqwv2W"
+            className="social-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <span className="material-symbols-rounded">forum</span>
             <span className="social-text">Join Discord</span>
           </a>
