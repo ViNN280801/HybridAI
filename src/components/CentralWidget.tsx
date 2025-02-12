@@ -3,7 +3,13 @@
 import Image from "next/image";
 import AISelector from "@/components/AISelector";
 
-export default function CentralWidget() {
+export default function CentralWidget({
+  isCollapsed,
+  onToggle,
+}: {
+  isCollapsed: boolean;
+  onToggle: () => void;
+}) {
   return (
     <div className="container">
       <header className="app-header">
@@ -76,10 +82,16 @@ export default function CentralWidget() {
       </div>
 
       <div className="central-controls">
-        <AISelector />
-        <button className="theme-toggle">
-          <span className="material-symbols-rounded">light_mode</span>
+        <button
+          className="collapse-btn"
+          onClick={onToggle}
+          aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          <span className="material-symbols-rounded">
+            {isCollapsed ? "chevron_right" : "chevron_left"}
+          </span>
         </button>
+        <AISelector />
       </div>
     </div>
   );

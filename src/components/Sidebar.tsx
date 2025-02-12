@@ -1,14 +1,12 @@
 // HybridAI/src/components/Sidebar.tsx
 
 import Link from "next/link";
-import SidebarControls from "@/components/SidebarControls";
 
 type SidebarProps = {
   isCollapsed: boolean;
-  onToggle: () => void;
 };
 
-export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ isCollapsed }: SidebarProps) {
   return (
     <div className={`sidebar ${isCollapsed ? "collapsed" : ""}`} id="sidebar">
       <div className="sidebar-header">
@@ -47,8 +45,6 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
           </a>
         </div>
       </div>
-
-      <SidebarControls isCollapsed={isCollapsed} onToggle={onToggle} />
     </div>
   );
 }
