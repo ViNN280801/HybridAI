@@ -5,9 +5,7 @@ const nextConfig = {
   images: {
     domains: ["static.vecteezy.com", "i.tracxn.com", "logowik.com"],
   },
-  experimental: {
-    serverExternalPackages: ["ws"],
-  },
+  experimental: {},
 };
 
 module.exports = nextConfig;
