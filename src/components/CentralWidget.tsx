@@ -1,8 +1,17 @@
 // HybridAI/src/components/CentralWidget.tsx
 
-import Image from "next/image";
+import React, { useState } from "react";
 import AISelector from "@/components/AISelector";
 import ThemeToggle from "@/components/ThemeToggle";
+import dynamic from "next/dynamic";
+
+// Import SuggestionList as a client-side only component
+const SuggestionListNoSSR = dynamic(
+  () => import("@/components/SuggestionList"),
+  {
+    ssr: false,
+  }
+);
 
 export default function CentralWidget({
   isCollapsed,
@@ -11,6 +20,25 @@ export default function CentralWidget({
   isCollapsed: boolean;
   onToggle: () => void;
 }) {
+  // State for input field and selected AI model
+  const [promptText, setPromptText] = useState("");
+  const [selectedModel, setSelectedModel] = useState("deepseek");
+
+  // Callback that will be triggered when a suggestion is clicked.
+  // Expecting an object with both the model id and the selected prompt.
+  const handleSuggestionSelect = (selected: {
+    model: string;
+    prompt: string;
+  }) => {
+    setSelectedModel(selected.model);
+    setPromptText(selected.prompt);
+  };
+
+  // Handler for manually changing the AI model via the select element
+  const handleModelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedModel(e.target.value);
+  };
+
   return (
     <div className="container">
       <header className="app-header">
@@ -20,32 +48,7 @@ export default function CentralWidget({
         </h2>
       </header>
 
-      <div className="suggestions">
-        {[
-          { id: "deepseek", icon: "deepseek_logo.png", title: "DeepSeek" },
-          { id: "claude", icon: "claude_3.5_logo.png", title: "Claude 3.5" },
-          { id: "chatgpt", icon: "chatgpt_logo.png", title: "ChatGPT" },
-          { id: "gemini", icon: "gemini_logo.png", title: "Gemini" },
-        ].map((item) => (
-          <a key={item.id} href="#" className="suggestion-item">
-            {item.icon ? (
-              <Image
-                src={`/${item.icon}`}
-                alt={item.title}
-                className="w-6 h-6 object-contain mr-3"
-                width={24}
-                height={24}
-              />
-            ) : (
-              <span className="text-lg font-bold mr-3">{item.title}</span>
-            )}
-            <div className="suggestion-content">
-              <h3>{item.title}</h3>
-              <p>Sample description</p>
-            </div>
-          </a>
-        ))}
-      </div>
+      <SuggestionListNoSSR onSelect={handleSuggestionSelect} />
 
       <div className="chats-container"></div>
 
@@ -60,6 +63,8 @@ export default function CentralWidget({
               placeholder="Ask Hybrid.Ai anything..."
               className="prompt-input"
               required
+              value={promptText}
+              onChange={(e) => setPromptText(e.target.value)}
             />
             <div className="prompt-actions">
               <button id="send-prompt-btn" className="material-symbols-rounded">
@@ -91,7 +96,8 @@ export default function CentralWidget({
             {isCollapsed ? "chevron_right" : "chevron_left"}
           </span>
         </button>
-        <AISelector />
+        {/* Pass the selected value and change handler to AISelector */}
+        <AISelector value={selectedModel} onChange={handleModelChange} />
       </div>
     </div>
   );

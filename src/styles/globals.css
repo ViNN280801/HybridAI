@@ -557,16 +557,16 @@ body {
   width: 125%;
   padding: 8px;
   border-radius: 15px;
-  background: #2a2a2a;
-  color: #fff;
-  border: 1px solid #3a3a3a;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px;
   outline: none;
   cursor: pointer;
   font-size: 1.2rem;
 }
 
 .ai-select:hover {
-  background: #3a3a3a;
+  background: var(--secondary-hover-color);
 }
 
 .chat-item {
@@ -707,4 +707,15 @@ body {
   --scrollbar-color: var(--dark-scrollbar-color);
   --chat-bg: var(--dark-chat-bg);
   --user-chat-bg: var(--dark-user-chat-bg);
+}
+
+body.light-theme .suggestions .suggestion-item {
+  background: var(--secondary-color);
+  border: 1px solid var(--secondary-hover-color);
+  color: var(--text-color);
+  transition: background 0.3s ease;
+}
+
+body.light-theme .suggestions .suggestion-item:hover {
+  background: var(--secondary-hover-color);
 }
