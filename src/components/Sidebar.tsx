@@ -1,14 +1,21 @@
 // HybridAI/src/components/Sidebar.tsx
 
 import Link from "next/link";
+import { useTheme } from "@/hooks/useTheme";
 
 type SidebarProps = {
   isCollapsed: boolean;
 };
 
 export default function Sidebar({ isCollapsed }: SidebarProps) {
+  const { theme } = useTheme();
+
   return (
-    <div className={`sidebar ${isCollapsed ? "collapsed" : ""}`} id="sidebar">
+    <div
+      className={`sidebar ${isCollapsed ? "collapsed" : ""}`}
+      id="sidebar"
+      data-theme={theme}
+    >
       <div className="sidebar-header">
         <Link href="/" className="logo-container">
           <span className="logo-text">Hybrid.Ai</span>
@@ -16,10 +23,12 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       <div className="sidebar-menu">
-        <a href="#" className="menu-item active" id="chatsMenuItem">
+        <a href="#" className="menu-item" id="chatsMenuItem">
           <span className="material-symbols-rounded">chat</span>
           <span className="menu-text">Chats</span>
-          <span className="new-chat material-symbols-rounded">add</span>
+          {!isCollapsed && (
+            <span className="new-chat material-symbols-rounded">add</span>
+          )}
         </a>
 
         <a href="#" className="menu-item">

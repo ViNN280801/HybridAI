@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import AISelector from "@/components/AISelector";
+import ThemeToggle from "@/components/ThemeToggle";
 
 export default function CentralWidget({
   isCollapsed,
@@ -69,15 +70,14 @@ export default function CentralWidget({
           <button type="button" className="material-symbols-rounded">
             stop
           </button>
-          <button type="button" className="material-symbols-rounded">
-            light_mode
-          </button>
+          <ThemeToggle />
           <button type="button" className="material-symbols-rounded">
             delete
           </button>
         </div>
         <p className="disclaimer-text">
-          Hybrid.Ai can make mistakes, so double check it
+          Hybrid.Ai can make mistakes. Use critical thinking before accepting
+          the information :)
         </p>
       </div>
 
