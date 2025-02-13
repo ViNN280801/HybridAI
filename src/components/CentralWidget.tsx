@@ -40,7 +40,7 @@ export default function CentralWidget({
   };
 
   return (
-    <div className="container">
+    <div className={`container ${isCollapsed ? "sidebar-collapsed" : ""}`}>
       <header className="app-header">
         <h1 className="heading">Hybrid.Ai</h1>
         <h2 className="sub-heading">
@@ -52,11 +52,8 @@ export default function CentralWidget({
 
       <div className="chats-container"></div>
 
-      <div className="prompt-container">
-        <div
-          className="prompt-wrapper"
-          style={{ marginRight: "100px", alignItems: "center" }}
-        >
+      <div className={`prompt-container ${isCollapsed ? "collapsed" : ""}`}>
+        <div className="prompt-wrapper">
           <form action="#" className="prompt-form">
             <input
               type="text"

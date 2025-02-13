@@ -49,6 +49,10 @@
   --user-chat-bg: var(--dark-user-chat-bg);
   --gradient-start: #3b82f6;
   --gradient-end: #8b5cf6;
+
+  /* Define sidebar widths */
+  --sidebar-width-expanded: 260px;
+  --sidebar-width-collapsed: 64px;
 }
 
 /* fallback */
@@ -263,13 +267,13 @@ body {
 
 /* Adjust your container margin */
 .container {
-  margin-left: 260px;
+  margin-left: var(--sidebar-width-expanded);
   transition: margin-left 0.3s ease;
   padding-top: 100px;
 }
 
 .container.sidebar-collapsed {
-  margin-left: 64px;
+  margin-left: var(--sidebar-width-collapsed);
 }
 
 .container {
@@ -448,12 +452,18 @@ body {
 
 /* Prompt Input Container */
 .prompt-container {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  padding: 16px 0;
-  background: var(--primary-color);
+  position: fixed !important;
+  bottom: 0 !important;
+  left: var(--sidebar-width-expanded) !important;
+  width: calc(100% - var(--sidebar-width-expanded)) !important;
+  padding: 16px 0 !important;
+  background: var(--primary-color) !important;
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+.container.sidebar-collapsed .prompt-container {
+  left: var(--sidebar-width-collapsed) !important;
+  width: calc(100% - var(--sidebar-width-collapsed)) !important;
 }
 
 .prompt-container .prompt-wrapper,
@@ -643,9 +653,13 @@ body {
 
 /* Adjust container margin */
 .container {
-  margin-left: 260px;
+  margin-left: var(--sidebar-width-expanded);
   transition: margin-left 0.3s ease;
   padding-top: 100px;
+}
+
+.container.sidebar-collapsed {
+  margin-left: var(--sidebar-width-collapsed);
 }
 
 .gradient-text {
