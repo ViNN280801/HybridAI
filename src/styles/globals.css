@@ -458,7 +458,9 @@ body {
   width: calc(100% - var(--sidebar-width-expanded)) !important;
   padding: 16px 0 !important;
   background: var(--primary-color) !important;
-  transition: left 0.3s ease, width 0.3s ease;
+  transition:
+    left 0.3s ease,
+    width 0.3s ease;
 }
 
 .container.sidebar-collapsed .prompt-container {
@@ -520,6 +522,7 @@ body {
   padding: 16px 20px 0;
   color: var(--text-color);
   margin-bottom: 17px;
+  margin-left: 20px;
 }
 
 .prompt-form #send-prompt-btn {
