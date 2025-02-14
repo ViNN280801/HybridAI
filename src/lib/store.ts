@@ -22,6 +22,7 @@ interface StoreState {
   chats: Chat[];
   activeChat: string | null;
   selectedModel: string;
+  error: string | null;
   createChat: () => void;
   setActiveChat: (id: string) => void;
   deleteChat: (id: string) => void;
@@ -31,14 +32,18 @@ interface StoreState {
     message: Omit<Message, "id" | "createdAt">
   ) => void;
   setSelectedModel: (model: string) => void;
+  setError: (error: string | null) => void;
+  isCheckingWallet: boolean;
+  setIsCheckingWallet: (value: boolean) => void;
 }
 
-export const useStore = create<StoreState>()(
+const store = create<StoreState>()(
   persist(
     (set) => ({
       chats: [],
       activeChat: null,
       selectedModel: "openai",
+      error: null,
       createChat: () => {
         const newChat: Chat = {
           id: Date.now().toString(),
@@ -82,9 +87,14 @@ export const useStore = create<StoreState>()(
           ),
         })),
       setSelectedModel: (model) => set({ selectedModel: model }),
+      setError: (error) => set({ error }),
+      isCheckingWallet: true,
+      setIsCheckingWallet: (value) => set({ isCheckingWallet: value }),
     }),
     {
       name: "chat-storage",
     }
   )
 );
+
+export default store;

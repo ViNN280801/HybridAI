@@ -1,9 +1,9 @@
-// HybridAI/src/components/CentralWidget.tsx
-
 import React, { useState } from "react";
 import AISelector from "@/components/AISelector";
 import ThemeToggle from "@/components/ThemeToggle";
 import dynamic from "next/dynamic";
+import useSolana from "@/hooks/useSolana";
+import AuthModal from "@/components/AuthModal";
 
 // Import SuggestionList as a client-side only component
 const SuggestionListNoSSR = dynamic(
@@ -24,8 +24,10 @@ export default function CentralWidget({
   const [promptText, setPromptText] = useState("");
   const [selectedModel, setSelectedModel] = useState("deepseek");
 
+  // Using useSolana hook to check wallet connection status
+  const { isConnected } = useSolana();
+
   // Callback that will be triggered when a suggestion is clicked.
-  // Expecting an object with both the model id and the selected prompt.
   const handleSuggestionSelect = (selected: {
     model: string;
     prompt: string;
@@ -40,7 +42,7 @@ export default function CentralWidget({
   };
 
   return (
-    <div className="container">
+    <div className={`container ${isCollapsed ? "sidebar-collapsed" : ""}`}>
       <header className="app-header">
         <h1 className="heading">Hybrid.Ai</h1>
         <h2 className="sub-heading">
@@ -50,13 +52,11 @@ export default function CentralWidget({
 
       <SuggestionListNoSSR onSelect={handleSuggestionSelect} />
 
+      {/* Chat container with scrollbar style (see CSS snippet below) */}
       <div className="chats-container"></div>
 
-      <div className="prompt-container">
-        <div
-          className="prompt-wrapper"
-          style={{ marginRight: "100px", alignItems: "center" }}
-        >
+      <div className={`prompt-container ${isCollapsed ? "collapsed" : ""}`}>
+        <div className="prompt-wrapper">
           <form action="#" className="prompt-form">
             <input
               type="text"
@@ -65,6 +65,7 @@ export default function CentralWidget({
               required
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
+              disabled={!isConnected} // Disable input if wallet is not connected
             />
             <div className="prompt-actions">
               <button id="send-prompt-btn" className="material-symbols-rounded">
@@ -99,6 +100,9 @@ export default function CentralWidget({
         {/* Pass the selected value and change handler to AISelector */}
         <AISelector value={selectedModel} onChange={handleModelChange} />
       </div>
+
+      {/* Render AuthModal as an overlay if wallet is not connected */}
+      {!isConnected && <AuthModal />}
     </div>
   );
 }

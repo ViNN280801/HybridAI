@@ -12,7 +12,7 @@ interface Suggestion {
 }
 
 interface SuggestionListProps {
-  // Now onSelect accepts an object with 'model' and 'prompt'
+  // onSelect accepts an object with 'model' and 'prompt'
   onSelect: (selected: { model: string; prompt: string }) => void;
 }
 
@@ -35,39 +35,48 @@ const getRandomPhrase = (modelId: string): string => {
 };
 
 export default function SuggestionList({ onSelect }: SuggestionListProps) {
+  // Compute the suggestions only once using useMemo
+  const memoizedSuggestions = React.useMemo(() => {
+    try {
+      return suggestions.map((item) => ({
+        ...item,
+        phrase: getRandomPhrase(item.id),
+      }));
+    } catch (error) {
+      console.error("Error computing suggestions:", error);
+      return suggestions.map((item) => ({ ...item, phrase: "" }));
+    }
+  }, []); // Empty dependency array ensures this is computed only on mount
+
   return (
     <div className="suggestions">
-      {suggestions.map((item) => {
-        // Pick a random query from promptPool for current model.
-        const phrase = getRandomPhrase(item.id);
-        return (
-          <a
-            key={item.id}
-            href="#"
-            className="suggestion-item"
-            onClick={(e) => {
-              e.preventDefault();
-              onSelect({ model: item.id, prompt: phrase });
-            }}
-          >
-            {item.icon ? (
-              <Image
-                src={`/${item.icon}`}
-                alt={item.title}
-                className="w-6 h-6 object-contain mr-3"
-                width={24}
-                height={24}
-              />
-            ) : (
-              <span className="text-lg font-bold mr-3">{item.title}</span>
-            )}
-            <div className="suggestion-content">
-              <h3>{item.title}</h3>
-              <p>{phrase}</p>
-            </div>
-          </a>
-        );
-      })}
+      {memoizedSuggestions.map((item) => (
+        <a
+          key={item.id}
+          href="#"
+          className="suggestion-item"
+          onClick={(e) => {
+            e.preventDefault();
+            onSelect({ model: item.id, prompt: item.phrase });
+          }}
+        >
+          {item.icon ? (
+            <Image
+              src={`/${item.icon}`}
+              alt={item.title}
+              className="w-6 h-6 object-contain mr-3"
+              width={24}
+              height={24}
+            />
+          ) : (
+            <span className="text-lg font-bold mr-3">{item.title}</span>
+          )}
+          <div className="suggestion-content">
+            <h3>{item.title}</h3>
+            <p>{item.phrase}</p>
+          </div>
+        </a>
+      ))}
     </div>
   );
 }
