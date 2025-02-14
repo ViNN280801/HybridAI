@@ -288,14 +288,16 @@ export default function useSolana() {
         const publicKey = window.phantom.solana.publicKey?.toString();
         if (publicKey) {
           try {
+            // Automatically restores the connection
             await handleWalletConnection(publicKey);
+            return; // Important: stops execution after successful connection
           } catch (error) {
             console.error("Error auto-connecting:", error);
           }
-        } else {
-          console.error("Public key is missing");
         }
       }
+      // If auto-connection fails, show the authorization modal
+      setIsConnected(false);
     };
     init();
   }, [checkCachedWallet, handleWalletConnection]);

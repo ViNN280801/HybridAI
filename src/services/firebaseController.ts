@@ -7,6 +7,9 @@ import {
   arrayUnion,
   arrayRemove,
   getDoc,
+  getDocs,
+  query,
+  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -33,6 +36,20 @@ export interface Chat {
 }
 
 /**
+ * Validates collection existence before operations
+ * @throws {Error} When collection doesn't exist
+ */
+async function validateCollection(collectionName: string): Promise<void> {
+  const colRef = collection(db, collectionName);
+  const queryRef = query(colRef, limit(1));
+  const snapshot = await getDocs(queryRef);
+
+  if (snapshot.empty && process.env.NODE_ENV !== "production") {
+    console.warn(`Collection '${collectionName}' is empty or doesn't exist`);
+  }
+}
+
+/**
  * Creates or updates a user document.
  * If the document does not exist, it will be created.
  *
@@ -40,12 +57,21 @@ export interface Chat {
  */
 export async function createOrUpdateUser(user: User): Promise<void> {
   try {
+    const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+    if (!usersCollection) {
+      throw new Error(
+        "runTransaction() inside createOrUpdateUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+      );
+    }
+
+    await validateCollection(usersCollection);
+
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, "users", user.id);
+      const userRef = doc(db, usersCollection, user.id);
       const userSnap = await transaction.get(userRef);
 
       if (userSnap.exists()) {
-        // Update existing user document using atomic update for arrays if needed
+        // Update existing user document using atomic update for arrays
         transaction.update(userRef, {
           emails: arrayUnion(...user.emails),
         });
@@ -78,15 +104,28 @@ export async function createNewChat(userId: string): Promise<Chat> {
     };
 
     await runTransaction(db, async (transaction) => {
+      const chatsCollection = process.env.HYBRIDAI_DEFAULT_CHATS_COLLECTION;
+      if (!chatsCollection) {
+        throw new Error(
+          "runTransaction() inside createNewChat(): HYBRIDAI_DEFAULT_CHATS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+
       // Reference to the user's document
-      const userRef = doc(db, "users", userId);
+      const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+      if (!usersCollection) {
+        throw new Error(
+          "runTransaction() inside createNewChat(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+      const userRef = doc(db, usersCollection, userId);
       const userSnap = await transaction.get(userRef);
       if (!userSnap.exists()) {
         throw new Error("User does not exist.");
       }
 
       // Create new chat document reference with auto-generated ID
-      const chatRef = doc(collection(db, "Chats"));
+      const chatRef = doc(collection(db, chatsCollection));
       // Set chat document with default values and owner field
       transaction.set(chatRef, {
         name: "New Chat",
@@ -123,7 +162,13 @@ export async function renameChat(
 ): Promise<void> {
   try {
     await runTransaction(db, async (transaction) => {
-      const chatRef = doc(db, "Chats", chatId);
+      const chatsCollection = process.env.HYBRIDAI_DEFAULT_CHATS_COLLECTION;
+      if (!chatsCollection) {
+        throw new Error(
+          "runTransaction() inside renameChat(): HYBRIDAI_DEFAULT_CHATS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+      const chatRef = doc(db, chatsCollection, chatId);
       const chatSnap = await transaction.get(chatRef);
       if (!chatSnap.exists()) {
         throw new Error("Chat does not exist.");
@@ -147,8 +192,20 @@ export async function deleteChat(
 ): Promise<void> {
   try {
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, "users", userId);
-      const chatRef = doc(db, "Chats", chatId);
+      const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+      if (!usersCollection) {
+        throw new Error(
+          "runTransaction() inside deleteChat(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+      const chatsCollection = process.env.HYBRIDAI_DEFAULT_CHATS_COLLECTION;
+      if (!chatsCollection) {
+        throw new Error(
+          "runTransaction() inside deleteChat(): HYBRIDAI_DEFAULT_CHATS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+      const userRef = doc(db, usersCollection, userId);
+      const chatRef = doc(db, chatsCollection, chatId);
 
       const userSnap = await transaction.get(userRef);
       if (!userSnap.exists()) {
@@ -173,7 +230,13 @@ export async function deleteChat(
  */
 export async function getChats(userId: string): Promise<Chat[]> {
   try {
-    const userRef = doc(db, "users", userId);
+    const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+    if (!usersCollection) {
+      throw new Error(
+        "getChats(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+      );
+    }
+    const userRef = doc(db, usersCollection, userId);
     const userSnap = await getDoc(userRef);
 
     if (!userSnap.exists()) {
@@ -186,7 +249,13 @@ export async function getChats(userId: string): Promise<Chat[]> {
 
     // For each chatId, fetch the chat document
     for (const id of chatIds) {
-      const chatRef = doc(db, "Chats", id);
+      const chatsCollection = process.env.HYBRIDAI_DEFAULT_CHATS_COLLECTION;
+      if (!chatsCollection) {
+        throw new Error(
+          "runTransaction() inside deleteChat(): HYBRIDAI_DEFAULT_CHATS_COLLECTION is not defined. Check environment variables."
+        );
+      }
+      const chatRef = doc(db, chatsCollection, id);
       const chatSnap = await getDoc(chatRef);
       if (chatSnap.exists()) {
         chats.push({ id, ...(chatSnap.data() as Omit<Chat, "id">) });
@@ -202,7 +271,13 @@ export async function getCurrentUser(
   walletAddress: string
 ): Promise<User | null> {
   try {
-    const userRef = doc(db, "users", walletAddress);
+    const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+    if (!usersCollection) {
+      throw new Error(
+        "getCurrentUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+      );
+    }
+    const userRef = doc(db, usersCollection, walletAddress);
     const userSnap = await getDoc(userRef);
     return userSnap.exists()
       ? ({ id: userSnap.id, ...userSnap.data() } as User)
