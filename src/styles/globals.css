@@ -546,6 +546,7 @@ body {
   color: var(--text-color);
   margin-bottom: 17px;
   margin-left: 20px;
+  pointer-events: none;
 }
 
 .prompt-form #send-prompt-btn {
