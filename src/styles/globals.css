@@ -221,25 +221,28 @@ body {
 }
 
 .wallet-info {
-  background: var(--background-secondary);
-  border: 1px solid var(--border-color);
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: var(--bg-color-secondary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  backdrop-filter: blur(10px);
+  margin-left: auto;
+  order: 2;
 }
 
 .wallet-address {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px;
-  border-radius: 8px;
-  margin-bottom: 16px;
-  font-family: "Poppins", sans-serif;
+  gap: 0.75rem;
+  font-size: 0.9rem;
   cursor: pointer;
-  color: var(--text-primary);
+  transition: opacity 0.2s;
 }
 
-.wallet-address::before {
-  background: var(--status-connected);
-  box-shadow: 0 0 0 3px var(--status-connected-shadow);
+.wallet-balance {
+  font-weight: 500;
+  color: var(--accent-color);
 }
 
 .copy-indicator .material-symbols-rounded {
@@ -659,21 +662,6 @@ body {
   left: 64px;
 }
 
-/* Adjust AI selector styling */
-.sidebar-controls .ai-selector {
-  padding: 0;
-  margin: 0;
-}
-
-.sidebar-controls .ai-select {
-  width: 140px;
-  padding: 6px 8px;
-  border-radius: 20px;
-  background: var(--secondary-color);
-  color: var(--text-color);
-  border: 1px solid var(--secondary-hover-color);
-}
-
 /* Adjust container margin */
 .container {
   margin-left: var(--sidebar-width-expanded);
@@ -707,15 +695,23 @@ body {
   }
 }
 
-.central-controls {
+.central-controls,
+.wallet-header-container {
   position: fixed;
   top: 16px;
-  left: 280px;
   display: flex;
   gap: 12px;
   align-items: center;
   z-index: 1000;
   transition: left 0.3s ease;
+}
+
+.central-controls {
+  left: 280px;
+}
+
+.wallet-header-container {
+  right: 16px;
 }
 
 .sidebar.collapsed ~ .container .central-controls {
@@ -1002,8 +998,6 @@ body.light-theme .suggestions .suggestion-item:hover {
   border-radius: 25px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: -15px 10px 10px;
   transition: all 0.3s ease;
 }
 
