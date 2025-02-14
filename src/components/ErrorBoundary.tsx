@@ -23,7 +23,7 @@ interface ErrorBoundaryProps {
  */
 interface ErrorBoundaryState {
   hasError: boolean;
-  errorMessage: string;
+  errorMessage?: string;
 }
 
 /**
@@ -35,7 +35,10 @@ interface ErrorBoundaryState {
  *   <MyComponent />
  * </ErrorBoundary>
  */
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export default class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   /**
    * @memberof ErrorBoundary
    * @type {ErrorBoundaryState}
@@ -54,13 +57,15 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
    * @see {@link https://react.dev/reference/react/Component#static-getderivedstatefromerror React Documentation}
    */
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    if (error.message.includes("User rejected the request")) {
+      return { hasError: false };
+    }
     return { hasError: true, errorMessage: error.message };
   }
 
   /**
    * @method componentDidCatch
    * @param {Error} error - The caught error object
-   * @param {React.ErrorInfo} errorInfo - Additional error information
    * @returns {void}
    *
    * @description
@@ -68,8 +73,10 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
    *
    * @see {@link https://react.dev/reference/react/Component#componentdidcatch React Documentation}
    */
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Error caught in ErrorBoundary:", error, errorInfo);
+  componentDidCatch(error: Error) {
+    if (!error.message.includes("User rejected the request")) {
+      console.error("Uncaught error:", error);
+    }
   }
 
   /**
@@ -92,5 +99,3 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
     return this.props.children;
   }
 }
-
-export default ErrorBoundary;
