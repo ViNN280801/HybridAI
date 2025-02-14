@@ -39,7 +39,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
     >
       <div className="sidebar-header">
         <Link href="/" className="logo-container">
-          <span className="logo-text">Hybrid.Ai</span>
+          <span className="logo-text">Hybrid.AI</span>
         </Link>
       </div>
 

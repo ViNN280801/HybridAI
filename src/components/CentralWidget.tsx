@@ -44,7 +44,7 @@ export default function CentralWidget({
   return (
     <div className={`container ${isCollapsed ? "sidebar-collapsed" : ""}`}>
       <header className="app-header">
-        <h1 className="heading">Hybrid.Ai</h1>
+        <h1 className="heading">Hybrid.AI</h1>
         <h2 className="sub-heading">
           How can <span className="gradient-text">We</span> help you?
         </h2>
@@ -60,7 +60,7 @@ export default function CentralWidget({
           <form action="#" className="prompt-form">
             <input
               type="text"
-              placeholder="Ask Hybrid.Ai anything..."
+              placeholder="Ask Hybrid.AI anything..."
               className="prompt-input"
               required
               value={promptText}
@@ -82,7 +82,7 @@ export default function CentralWidget({
           </button>
         </div>
         <p className="disclaimer-text">
-          Hybrid.Ai can make mistakes. Use critical thinking before accepting
+          Hybrid.AI can make mistakes. Use critical thinking before accepting
           the information :)
         </p>
       </div>

@@ -15,7 +15,7 @@ export default function MyApp({ pageProps }: AppProps) {
       <ErrorBoundary>
         <Provider store={store}>
           <Head>
-            <title>Hybrid.Ai - Intelligent Platform</title>
+            <title>Hybrid.AI - Intelligent Platform</title>
             <meta
               name="viewport"
               content="width=device-width, initial-scale=1.0"
