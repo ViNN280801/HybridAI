@@ -2,9 +2,23 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [**]
+    branches-ignore: []
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "yarn.lock"
+      - "tsconfig.json"
+      - ".github/workflows/**"
+
   pull_request:
-    branches: [**]
+    types: [opened, synchronize, reopened]
+    branches-ignore: []
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "yarn.lock"
 
 jobs:
   lint-build-test:
