@@ -1,0 +1,6 @@
+/* HybridAI/src/styles/central_widget/index.css */
+
+@import "./centre/index.css";
+@import "./footer/index.css";
+@import "./header/index.css";
+@import "./container.css";

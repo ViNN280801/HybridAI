@@ -1,0 +1,23 @@
+/* HybridAI/src/styles/sidebar/header.css */
+
+.sidebar-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--secondary-color);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.logo-text {
+  color: var(--text-color);
+  font-size: 20px;
+  font-weight: bold;
+}

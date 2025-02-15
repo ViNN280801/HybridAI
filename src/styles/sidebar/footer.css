@@ -1,0 +1,26 @@
+/* HybridAI/src/styles/sidebar/footer.css */
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--secondary-color);
+}
+
+.social-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #888;
+  text-decoration: none;
+  padding: 8px;
+}
+
+.social-icon {
+  width: 32px;
+  height: 32px;
+}

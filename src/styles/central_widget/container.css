@@ -1,0 +1,53 @@
+/* HybridAI/src/styles/central_widget/container.css */
+
+.container {
+  margin-left: var(--sidebar-width-expanded);
+  transition: margin-left 0.3s ease;
+  padding-top: 100px;
+}
+
+.container.sidebar-collapsed {
+  margin-left: calc(var(--sidebar-width-collapsed) / 2);
+}
+
+.container {
+  padding: 32px 0 60px;
+  margin-left: calc(var(--sidebar-width-expanded) / 2);
+  transition: margin-left 0.3s ease;
+  padding-top: 100px;
+}
+
+.container .app-header,
+.container .suggestions,
+.container .prompt-wrapper,
+.container .disclaimer-text,
+.container .message {
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 20px;
+  max-width: 980px;
+}
+
+.container .app-header {
+  margin-top: 4vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Suggestions Styling */
+.container .suggestions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+  margin-top: 9.5vh;
+  padding: 0 20px;
+  max-width: 980px;
+  margin-left: auto;
+  margin-right: auto;
+  justify-content: center;
+}
+
+.container.sidebar-collapsed .prompt-container {
+  left: var(--sidebar-width-collapsed) !important;
+  width: calc(100% - var(--sidebar-width-collapsed)) !important;
+}

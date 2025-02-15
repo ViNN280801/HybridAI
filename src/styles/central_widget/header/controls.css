@@ -1,0 +1,108 @@
+/* HybridAI/src/styles/central_widget/controls.css */
+
+.central-controls,
+.wallet-header-container {
+  position: fixed;
+  top: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 1000;
+  transition: left 0.3s ease;
+}
+
+.central-controls {
+  left: 280px;
+}
+
+.ai-select {
+  width: 125%;
+  padding: 8px;
+  border-radius: 15px;
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: 1px;
+  outline: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.ai-select:hover {
+  background: var(--secondary-hover-color);
+}
+
+.wallet-header-container {
+  right: 16px;
+}
+
+.wallet-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background: var(--bg-color-secondary);
+  padding: 0.75rem 1.25rem;
+  border-radius: 2rem;
+  backdrop-filter: blur(10px);
+  margin-left: auto;
+  order: 2;
+}
+
+.wallet-address {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.wallet-balance {
+  font-weight: 500;
+  color: var(--accent-color);
+}
+
+.copy-indicator .material-symbols-rounded {
+  color: var(--text-secondary);
+}
+
+.wallet-address:hover .copy-indicator .material-symbols-rounded {
+  color: var(--text-primary);
+}
+
+.balance-currency {
+  background: var(--tag-background);
+  color: var(--tag-text);
+}
+
+/* Copy indicator for the wallet address */
+.copy-indicator .material-symbols-rounded {
+  font-variation-settings:
+    "FILL" 0,
+    "wght" 300,
+    "GRAD" 0,
+    "opsz" 24;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logout-btn {
+  background: transparent;
+  color: #ff4757;
+  border: 1px solid #ff4757;
+  padding: 8px 16px;
+  border-radius: 25px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(255, 71, 87, 0.1);
+  transform: translateY(-1px);
+}
+
+.logout-btn .material-symbols-rounded {
+  font-size: 1.2rem;
+}
+
+.ai-selector {
+  padding: 12px;
+}
