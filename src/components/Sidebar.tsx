@@ -33,6 +33,19 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       <div className="sidebar-menu">
+        <Link href="#" className="menu-item" id="chatsMenuItem">
+          <span className="material-symbols-rounded">chat</span>
+          <span className="menu-text">Chats</span>
+          {!isCollapsed && (
+            <span className="new-chat material-symbols-rounded">add</span>
+          )}
+        </Link>
+
+        <Link href="wallet" className="menu-item">
+          <span className="material-symbols-rounded">wallet</span>
+          <span className="menu-text">Wallet</span>
+        </Link>
+
         <Link
           href="/"
           className={`menu-item ${showComingSoon ? "active" : ""}`}
@@ -51,19 +64,6 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
           <span className="material-symbols-rounded">savings</span>
           <span className="menu-text">Staking</span>
           {!isCollapsed && <span className="coming-soon-badge">Soon</span>}
-        </Link>
-
-        <Link href="#" className="menu-item" id="chatsMenuItem">
-          <span className="material-symbols-rounded">chat</span>
-          <span className="menu-text">Chats</span>
-          {!isCollapsed && (
-            <span className="new-chat material-symbols-rounded">add</span>
-          )}
-        </Link>
-
-        <Link href="wallet" className="menu-item">
-          <span className="material-symbols-rounded">wallet</span>
-          <span className="menu-text">Wallet</span>
         </Link>
       </div>
       <div className="sidebar-footer">
