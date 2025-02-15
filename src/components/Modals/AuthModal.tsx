@@ -3,7 +3,7 @@
 import React from "react";
 import useSolana from "@/hooks/useSolana";
 import useStore from "@/lib/store";
-import ErrorModal from "@/components/ErrorModal";
+import ErrorModal from "@/components/Modals/ErrorModal";
 
 /**
  * AuthModal component that forces the user to connect their Phantom wallet.

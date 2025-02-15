@@ -7,7 +7,6 @@
   display: flex;
   gap: 12px;
   align-items: center;
-  z-index: 1000;
   transition: left 0.3s ease;
 }
 

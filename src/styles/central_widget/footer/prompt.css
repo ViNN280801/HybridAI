@@ -62,14 +62,18 @@
 
 .prompt-container .disclaimer-text {
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 12px;
   padding: 16px 20px 0;
-  color: var(--text-color);
-  margin-bottom: 17px;
+  color: var(--subheading-color);
   pointer-events: none;
   width: 100%;
   left: 50%;
   transform: translateX(-10%);
+  margin-top: 15px;
+  opacity: 0.5;
+  transition:
+    opacity 0.3s ease,
+    margin-top 0.2s ease-in-out;
 }
 
 .prompt-form #send-prompt-btn {
@@ -83,4 +87,8 @@
   ~ .prompt-actions
   #send-prompt-btn {
   display: block;
+}
+
+.prompt-container:hover .disclaimer-text {
+  opacity: 0.9;
 }

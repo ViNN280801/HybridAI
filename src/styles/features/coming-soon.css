@@ -1,0 +1,170 @@
+/* HybridAI/src/styles/features/coming-soon.css */
+
+.coming-soon-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(2px);
+}
+
+.coming-soon-content {
+  position: relative;
+  background: var(--primary-color);
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  max-width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.coming-soon-content .material-symbols-rounded {
+  font-size: 3rem;
+  color: var(--gradient-start);
+  margin-bottom: 1rem;
+}
+
+.coming-soon-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.coming-soon-content p {
+  color: var(--subheading-color);
+}
+
+.coming-soon-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-color);
+  transition: transform 0.2s ease;
+}
+
+.coming-soon-close-btn:hover {
+  transform: scale(1.1);
+}
+
+.coming-soon-close-btn .material-symbols-rounded {
+  font-size: 1.5rem;
+}
+
+.coming-soon-badge {
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 80px;
+  height: 26px;
+  background: linear-gradient(
+    135deg,
+    #ffd700 0%,
+    #ffdf00 25%,
+    #ffc800 50%,
+    #ffb800 75%,
+    #ffa500 100%
+  );
+  border-radius: 15px;
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  box-shadow:
+    0 0 12px rgba(255, 215, 0, 0.3),
+    inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  animation:
+    badge-glow 3s ease-in-out infinite,
+    badge-float 5s ease-in-out infinite;
+  overflow: hidden;
+  color: var(--badge-text-color, #2a2a2a);
+}
+
+.coming-soon-badge::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    45deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 80%
+  );
+  animation: badge-shine 4s linear infinite;
+}
+
+[data-theme="light"] .coming-soon-badge {
+  --badge-text-color: var(--text-base-color, #2a2a2a);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.2);
+}
+
+[data-theme="light"] .coming-soon-badge::after {
+  background: linear-gradient(
+    45deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.3) 50%,
+    transparent 80%
+  );
+}
+
+[data-theme="dark"] .coming-soon-badge {
+  background: linear-gradient(
+    135deg,
+    #ffe55c 0%,
+    #ffd700 30%,
+    #ffc300 60%,
+    #ffb300 100%
+  );
+  box-shadow:
+    0 0 12px rgba(255, 215, 0, 0.4),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes badge-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 0 8px rgba(255, 215, 0, 0.3),
+      inset 0 1px 2px rgba(255, 255, 255, 0.3);
+    filter: brightness(0.95);
+  }
+  50% {
+    box-shadow:
+      0 0 20px rgba(255, 215, 0, 0.6),
+      inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    filter: brightness(1.05);
+  }
+}
+
+@keyframes badge-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+}
+
+@keyframes badge-shine {
+  0% {
+    transform: translateX(-50%) rotate(45deg);
+  }
+  100% {
+    transform: translateX(150%) rotate(45deg);
+  }
+}

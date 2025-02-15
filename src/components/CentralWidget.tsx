@@ -3,7 +3,7 @@ import AISelector from "@/components/AISelector";
 import ThemeToggle from "@/components/ThemeToggle";
 import dynamic from "next/dynamic";
 import useSolana from "@/hooks/useSolana";
-import AuthModal from "@/components/AuthModal";
+import AuthModal from "@/components/Modals/AuthModal";
 import WalletInfo from "@/components/WalletInfo";
 
 // Import SuggestionList as a client-side only component

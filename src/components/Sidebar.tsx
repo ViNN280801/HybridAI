@@ -3,6 +3,9 @@
 import Link from "next/link";
 import { useTheme } from "@/hooks/useTheme";
 import Image from "next/image";
+import ComingSoon from "@/components/Modals/ComingSoon";
+import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -10,6 +13,13 @@ type SidebarProps = {
 
 export default function Sidebar({ isCollapsed }: SidebarProps) {
   const { theme } = useTheme();
+  const pathname = usePathname();
+  const [showComingSoon, setShowComingSoon] = useState(false);
+
+  useEffect(() => {
+    setShowComingSoon(false);
+  }, [pathname]);
+
   return (
     <div
       className={`sidebar ${isCollapsed ? "collapsed" : ""}`}
@@ -23,22 +33,42 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       <div className="sidebar-menu">
-        <a href="#" className="menu-item" id="chatsMenuItem">
+        <Link
+          href="/"
+          className={`menu-item ${showComingSoon ? "active" : ""}`}
+          onClick={() => setShowComingSoon(true)}
+        >
+          <span className="material-symbols-rounded">science</span>
+          <span className="menu-text">NFT Lab</span>
+          {!isCollapsed && <span className="coming-soon-badge">Soon</span>}
+        </Link>
+
+        <Link
+          href="/"
+          className={`menu-item ${showComingSoon ? "active" : ""}`}
+          onClick={() => setShowComingSoon(true)}
+        >
+          <span className="material-symbols-rounded">savings</span>
+          <span className="menu-text">Staking</span>
+          {!isCollapsed && <span className="coming-soon-badge">Soon</span>}
+        </Link>
+
+        <Link href="#" className="menu-item" id="chatsMenuItem">
           <span className="material-symbols-rounded">chat</span>
           <span className="menu-text">Chats</span>
           {!isCollapsed && (
             <span className="new-chat material-symbols-rounded">add</span>
           )}
-        </a>
+        </Link>
 
-        <a href="wallet" className="menu-item">
+        <Link href="wallet" className="menu-item">
           <span className="material-symbols-rounded">wallet</span>
           <span className="menu-text">Wallet</span>
-        </a>
+        </Link>
       </div>
       <div className="sidebar-footer">
         <div className="social-links">
-          <a
+          <Link
             href="https://x.com/thehybridai?s=21"
             className="social-link"
             target="_blank"
@@ -52,8 +82,8 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               className="social-icon"
             />
             <span className="social-text">Follow Us</span>
-          </a>
-          <a
+          </Link>
+          <Link
             href="https://discord.gg/JKmqwv2W"
             className="social-link"
             target="_blank"
@@ -67,9 +97,13 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               className="social-icon"
             />
             <span className="social-text">Join Discord</span>
-          </a>
+          </Link>
         </div>
       </div>
+
+      {showComingSoon && (
+        <ComingSoon onClose={() => setShowComingSoon(false)} />
+      )}
     </div>
   );
 }
