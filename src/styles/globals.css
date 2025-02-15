@@ -1,11 +1,12 @@
 /* HybridAI/src/styles/globals.css */
 
+/* Import Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,700;1,600&family=Rubik:wght@300;400;500;600;700&family=Wix+Madefor+Text:wght@400;500;600;700;800&display=swap");
+
 /* Import Tailwind base styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,700;1,600&family=Rubik:wght@300;400;500;600;700&family=Wix+Madefor+Text:wght@400;500;600;700;800&display=swap");
 
 * {
   margin: 0;
@@ -316,6 +317,8 @@ body {
 
 .container .app-header {
   margin-top: 4vh;
+  display: flex;
+  flex-direction: column;
 }
 
 .app-header .heading {
@@ -343,6 +346,7 @@ body {
   max-width: 980px;
   margin-left: auto;
   margin-right: auto;
+  justify-content: center;
 }
 
 .suggestions .suggestion-item {
@@ -545,8 +549,10 @@ body {
   padding: 16px 20px 0;
   color: var(--text-color);
   margin-bottom: 17px;
-  margin-left: 20px;
   pointer-events: none;
+  width: 100%;
+  left: 50%;
+  transform: translateX(-10%);
 }
 
 .prompt-form #send-prompt-btn {
@@ -665,13 +671,13 @@ body {
 
 /* Adjust container margin */
 .container {
-  margin-left: var(--sidebar-width-expanded);
+  margin-left: calc(var(--sidebar-width-expanded) / 2);
   transition: margin-left 0.3s ease;
   padding-top: 100px;
 }
 
 .container.sidebar-collapsed {
-  margin-left: var(--sidebar-width-collapsed);
+  margin-left: calc(var(--sidebar-width-collapsed) / 2);
 }
 
 .gradient-text {
