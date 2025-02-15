@@ -31,12 +31,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
           )}
         </a>
 
-        <a href="#" className="menu-item">
-          <span className="material-symbols-rounded">person</span>
-          <span className="menu-text">Account</span>
-        </a>
-
-        <a href="#" className="menu-item">
+        <a href="wallet" className="menu-item">
           <span className="material-symbols-rounded">wallet</span>
           <span className="menu-text">Wallet</span>
         </a>
