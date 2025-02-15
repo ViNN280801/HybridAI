@@ -1,0 +1,26 @@
+/* HybridAI/src/styles/buttons/connect-wallet.css */
+
+.phantom-connect-btn {
+  background: linear-gradient(135deg, #9945ff, #14f195);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 30 auto;
+  align-self: center;
+  width: fit-content;
+}
+
+.phantom-connect-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(153, 69, 255, 0.4);
+}

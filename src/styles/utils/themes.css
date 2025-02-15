@@ -1,0 +1,51 @@
+/* HybridAI/src/styles/utils/themes.css */
+
+:root {
+  /* Dark theme variables */
+  --dark-text-color: #ffffff;
+  --dark-subheading-color: #97a7ca;
+  --dark-placeholder-color: #484e5f;
+  --dark-primary-color: #1c1c1c;
+  --dark-secondary-color: #2a2a2a;
+  --dark-secondary-hover-color: #898989;
+  --dark-scrollbar-color: #626a7f;
+  --dark-chat-bg: #2a2a2a;
+  --dark-user-chat-bg: #4b4b4b;
+
+  /* Light theme variables */
+  --light-text-color: #333333;
+  --light-subheading-color: #666666;
+  --light-placeholder-color: #999999;
+  --light-primary-color: #ffffff;
+  --light-secondary-color: #f0f0f0;
+  --light-secondary-hover-color: #e0e0e0;
+  --light-scrollbar-color: #cccccc;
+  --light-chat-bg: #f5f5f5;
+  --light-user-chat-bg: #e8e8e8;
+
+  /* Default theme (dark) */
+  --text-color: var(--dark-text-color);
+  --subheading-color: var(--dark-subheading-color);
+  --placeholder-color: var(--dark-placeholder-color);
+  --primary-color: var(--dark-primary-color);
+  --secondary-color: var(--dark-secondary-color);
+  --secondary-hover-color: var(--dark-secondary-hover-color);
+  --scrollbar-color: var(--dark-scrollbar-color);
+  --chat-bg: var(--dark-chat-bg);
+  --user-chat-bg: var(--dark-user-chat-bg);
+  --gradient-start: #3b82f6;
+  --gradient-end: #8b5cf6;
+}
+
+/* Light theme class */
+body.light-theme {
+  --text-color: var(--light-text-color);
+  --subheading-color: var(--light-subheading-color);
+  --placeholder-color: var(--light-placeholder-color);
+  --primary-color: var(--light-primary-color);
+  --secondary-color: var(--light-secondary-color);
+  --secondary-hover-color: var(--light-secondary-hover-color);
+  --scrollbar-color: var(--light-scrollbar-color);
+  --chat-bg: var(--light-chat-bg);
+  --user-chat-bg: var(--light-user-chat-bg);
+}

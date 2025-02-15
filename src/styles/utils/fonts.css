@@ -1,0 +1,32 @@
+/* HybridAI/src/styles/utils/fonts.css */
+
+/* Import Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Poppins:ital,wght@0,400;0,700;1,600&family=Rubik:wght@300;400;500;600;700&family=Wix+Madefor+Text:wght@400;500;600;700;800&display=swap");
+
+/* Fallback font for Material Symbols Rounded */
+@font-face {
+  font-family: "Material Symbols Rounded";
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialsymbolsrounded/v226/syl0-zNym6YjUruM-QrEh7-nyTnjDwKNJ_190FjpZIvDmUSVOK7BDB_Qb9vUSzq3wzLK-P0J-V_Zs-QtQth3-jOcbTCVpeRL2w5rwZu2rIelXxc.woff2)
+    format("woff2");
+}
+
+.material-symbols-rounded {
+  font-family: "Material Symbols Rounded";
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga";
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  color: var(--text-color);
+}

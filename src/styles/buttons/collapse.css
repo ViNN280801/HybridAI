@@ -1,0 +1,18 @@
+/* HybridAI/src/styles/buttons/collapse.css */
+
+.collapse-btn {
+  background: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  cursor: pointer;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.collapse-btn:hover {
+  background: var(--secondary-hover-color);
+}

@@ -1,0 +1,9 @@
+/* HybridAI/src/styles/modal/error-modal.css */
+
+.error-modal {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 8px;
+  max-width: 500px;
+  border: 1px solid #ff4757;
+}

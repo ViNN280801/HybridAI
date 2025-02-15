@@ -1,0 +1,31 @@
+/* HybridAI/src/styles/buttons/buttons.css */
+
+/* =============================== */
+/* === General purpose buttons === */
+/* =============================== */
+
+.close-btn {
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  float: right;
+}
+
+#stop-response-btn {
+  width: 56px;
+  height: 56px;
+  border: none;
+  cursor: pointer;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  color: var(--text-color);
+  background: #e53935;
+  transition: 0.3s ease;
+}
+
+#stop-response-btn:hover {
+  background: #b81200;
+}

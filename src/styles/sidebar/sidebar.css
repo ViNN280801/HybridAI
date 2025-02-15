@@ -1,0 +1,45 @@
+/* HybridAI/src/styles/sidebar/sidebar.css */
+
+@import "./footer.css";
+@import "./header.css";
+@import "./centre.css";
+
+:root {
+  --sidebar-width-expanded: 260px;
+  --sidebar-width-collapsed: 64px;
+}
+
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 260px;
+  background-color: var(--primary-color);
+  border-right: 1px solid var(--secondary-color);
+  transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+}
+
+.sidebar.collapsed {
+  width: 64px;
+}
+
+/* Collapsed state styles */
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .menu-text,
+.sidebar.collapsed .menu-action,
+.sidebar.collapsed .address-text,
+.sidebar.collapsed .social-text {
+  display: none;
+}
+
+.sidebar.collapsed ~ .sidebar-controls {
+  left: 64px;
+}
+
+.sidebar.collapsed ~ .container .central-controls {
+  left: 84px;
+}
