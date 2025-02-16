@@ -1,12 +1,12 @@
 // HybridAI/src/hooks/useSolana.ts
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import {
   WalletAdapter,
   WalletAdapterEvents,
+  EventEmitter,
 } from "@solana/wallet-adapter-base";
-import { EventEmitter } from "@solana/wallet-adapter-base";
 import useStore from "@/lib/store";
 import {
   createOrUpdateUser,
@@ -65,32 +65,67 @@ interface CachedWallet {
   timestamp: number;
 }
 
+// Constants for reuse
+const MAX_RETRY_ATTEMPTS = 3;
+const CACHE_EXPIRATION_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
+
 export default function useSolana() {
   const { setError } = useStore();
-  const [currentRpcIndex, setCurrentRpcIndex] = useState<number>(0);
 
+  const [currentRpcIndex, setCurrentRpcIndex] = useState(0);
+  const [solBalance, setSolBalance] = useState(0);
+  const [isConnected, setIsConnected] = useState(false);
+  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
+
+  // Getting the list of RPC endpoints
   const rpcUrls = useMemo(() => Object.values(SOLANA_MAINNET.rpcUrls), []);
+  const currentRpcUrl = rpcUrls[currentRpcIndex];
+
+  /**
+   * Switches to the next available RPC endpoint
+   * @returns {string} Next RPC URL
+   */
+  const switchToNextRpc = useCallback(() => {
+    const nextIndex = (currentRpcIndex + 1) % rpcUrls.length;
+    setCurrentRpcIndex(nextIndex);
+    return rpcUrls[nextIndex];
+  }, [currentRpcIndex, rpcUrls]);
 
   // Connection to Solana RPC
   const connection = useMemo(
     () =>
-      new Connection(rpcUrls[currentRpcIndex], {
+      new Connection(currentRpcUrl, {
         commitment: "confirmed",
         disableRetryOnRateLimit: false,
         confirmTransactionInitialTimeout: 60000,
       }),
-    [rpcUrls, currentRpcIndex]
+    [currentRpcUrl]
   );
 
-  // Function to switch to the next RPC endpoint
-  const switchToNextRpc = useCallback(() => {
-    setCurrentRpcIndex((prevIndex) => (prevIndex + 1) % rpcUrls.length);
-    return rpcUrls[(currentRpcIndex + 1) % rpcUrls.length];
-  }, [rpcUrls, currentRpcIndex]);
-
-  const [solBalance, setSolBalance] = useState<number>(0);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
+  /**
+   * Updates the wallet balance with automatic reconnection
+   * @param {string} publicKey Public key of the wallet
+   * @param {number} [retryCount=0] Retry counter
+   */
+  const fetchBalance = useCallback(
+    async (publicKey: string, retryCount = 0) => {
+      try {
+        const publicKeyInstance = new PublicKey(publicKey);
+        const balance = await connection.getBalance(publicKeyInstance);
+        setSolBalance(balance / LAMPORTS_PER_SOL);
+        setError(null);
+      } catch (error) {
+        if (retryCount < MAX_RETRY_ATTEMPTS) {
+          const nextRpc = switchToNextRpc();
+          console.warn(`RPC failed. Switching to: ${nextRpc}`);
+          return fetchBalance(publicKey, retryCount + 1);
+        }
+        setError("Connection error. Please try later.");
+        console.error("Balance fetch failed:", error);
+      }
+    },
+    [connection, setError, switchToNextRpc]
+  );
 
   // Define the browser for the Phantom download link
   const getBrowser = (): "chrome" | "firefox" | "safari" | "other" => {
@@ -119,30 +154,6 @@ export default function useSolana() {
     const browser = getBrowser();
     return `Phantom Wallet is required. Install for ${browser}: ${PHANTOM_DOWNLOAD_LINKS[browser]}`;
   };
-
-  const fetchBalance = useCallback(
-    async (publicKey: string, retryCount = 0): Promise<void> => {
-      const MAX_RETRIES = rpcUrls.length;
-
-      try {
-        const balance = await connection.getBalance(new PublicKey(publicKey));
-        setSolBalance(balance / 1_000_000_000);
-        setError(null);
-      } catch (error) {
-        if (retryCount < MAX_RETRIES - 1) {
-          const nextRpc = switchToNextRpc();
-          console.warn(`RPC connection failed. Switching to ${nextRpc}`);
-          return fetchBalance(publicKey, retryCount + 1);
-        }
-
-        setError(
-          `Failed to connect to all RPC endpoints. Please try again later.`
-        );
-        console.error("Error getting balance:", error);
-      }
-    },
-    [connection, switchToNextRpc, setError, rpcUrls.length]
-  );
 
   // Update handleWalletConnection with reconnection mechanism
   const handleWalletConnection = useCallback(
@@ -279,8 +290,7 @@ export default function useSolana() {
       console.error("Error checking cached wallet:", error);
       return false;
     }
-    const FIVE_DAYS = 5 * 24 * 60 * 60 * 1000;
-    if (Date.now() - cachedData.timestamp > FIVE_DAYS) {
+    if (Date.now() - cachedData.timestamp > CACHE_EXPIRATION_MS) {
       // If more than 5 days have passed since the last use, delete the cache
       localStorage.removeItem("cachedWallet");
       return false;
@@ -362,6 +372,6 @@ export default function useSolana() {
     fetchBalance,
     checkCachedWallet,
     getExplorerUrl,
-    currentRpcUrl: rpcUrls[currentRpcIndex],
+    currentRpcUrl,
   };
 }
