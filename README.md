@@ -1,5 +1,12 @@
 # HybridAI
 
+## Aims
+
+1. Free access to AI models tailored for cryptocurrency-related tasks.
+2. Create one ecosystem for all the crypto-related operations inside the app.
+3. Have analytical tools for the technical analysis like TradingView.
+4. Maximal simplification of the crypto-related operations for the users.
+
 ## Overview
 
 The project aims to develop a **Web3-integrated AI assistant** that provides users with:
