@@ -12,6 +12,7 @@ import {
   createOrUpdateUser,
   getCurrentUser,
 } from "@/services/firebaseController";
+import { SOLANA_MAINNET } from "@/config/chains";
 
 // Define the interface for the Phantom provider
 interface SolanaProvider {
@@ -66,24 +67,30 @@ interface CachedWallet {
 
 export default function useSolana() {
   const { setError } = useStore();
+  const [currentRpcIndex, setCurrentRpcIndex] = useState<number>(0);
 
-  const [solBalance, setSolBalance] = useState<number>(0);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
+  const rpcUrls = useMemo(() => Object.values(SOLANA_MAINNET.rpcUrls), []);
 
   // Connection to Solana RPC
-  const rpcUrl =
-    process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-    "https://solana-mainnet.rpcpool.com";
   const connection = useMemo(
     () =>
-      new Connection(rpcUrl, {
+      new Connection(rpcUrls[currentRpcIndex], {
         commitment: "confirmed",
         disableRetryOnRateLimit: false,
         confirmTransactionInitialTimeout: 60000,
       }),
-    [rpcUrl]
+    [rpcUrls, currentRpcIndex]
   );
+
+  // Function to switch to the next RPC endpoint
+  const switchToNextRpc = useCallback(() => {
+    setCurrentRpcIndex((prevIndex) => (prevIndex + 1) % rpcUrls.length);
+    return rpcUrls[(currentRpcIndex + 1) % rpcUrls.length];
+  }, [rpcUrls, currentRpcIndex]);
+
+  const [solBalance, setSolBalance] = useState<number>(0);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
 
   // Define the browser for the Phantom download link
   const getBrowser = (): "chrome" | "firefox" | "safari" | "other" => {
@@ -113,29 +120,35 @@ export default function useSolana() {
     return `Phantom Wallet is required. Install for ${browser}: ${PHANTOM_DOWNLOAD_LINKS[browser]}`;
   };
 
-  /**
-   * fetchBalance gets the SOL balance for the specified address and updates the state.
-   */
   const fetchBalance = useCallback(
-    async (publicKey: string) => {
+    async (publicKey: string, retryCount = 0): Promise<void> => {
+      const MAX_RETRIES = rpcUrls.length;
+
       try {
         const balance = await connection.getBalance(new PublicKey(publicKey));
         setSolBalance(balance / 1_000_000_000);
         setError(null);
       } catch (error) {
-        setError(`Can't get balance. Check RPC endpoint: ${rpcUrl}`);
+        if (retryCount < MAX_RETRIES - 1) {
+          const nextRpc = switchToNextRpc();
+          console.warn(`RPC connection failed. Switching to ${nextRpc}`);
+          return fetchBalance(publicKey, retryCount + 1);
+        }
+
+        setError(
+          `Failed to connect to all RPC endpoints. Please try again later.`
+        );
         console.error("Error getting balance:", error);
       }
     },
-    [connection, rpcUrl, setError]
+    [connection, switchToNextRpc, setError, rpcUrls.length]
   );
 
-  /**
-   * handleWalletConnection updates the data in Firebase, sets the state
-   * and caches the wallet address with a timestamp in localStorage.
-   */
+  // Update handleWalletConnection with reconnection mechanism
   const handleWalletConnection = useCallback(
-    async (publicKey: string) => {
+    async (publicKey: string, retryCount = 0): Promise<void> => {
+      const MAX_RETRIES = rpcUrls.length;
+
       try {
         await createOrUpdateUser({
           id: publicKey,
@@ -152,12 +165,18 @@ export default function useSolana() {
         };
         localStorage.setItem("cachedWallet", JSON.stringify(cachedData));
       } catch (error) {
+        if (retryCount < MAX_RETRIES - 1) {
+          const nextRpc = switchToNextRpc();
+          console.warn(`Connection failed. Switching to ${nextRpc}`);
+          return handleWalletConnection(publicKey, retryCount + 1);
+        }
+
         setWalletPublicKey(null);
         setIsConnected(false);
         throw error;
       }
     },
-    [fetchBalance]
+    [fetchBalance, switchToNextRpc, rpcUrls.length]
   );
 
   /**
@@ -330,6 +349,10 @@ export default function useSolana() {
     }
   }, [fetchBalance]);
 
+  const getExplorerUrl = (address: string): string => {
+    return `${SOLANA_MAINNET.blockExplorerUrls?.[0]}/address/${address}`;
+  };
+
   return {
     solBalance,
     isConnected,
@@ -338,5 +361,7 @@ export default function useSolana() {
     disconnectWallet,
     fetchBalance,
     checkCachedWallet,
+    getExplorerUrl,
+    currentRpcUrl: rpcUrls[currentRpcIndex],
   };
 }

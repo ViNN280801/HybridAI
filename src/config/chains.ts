@@ -16,8 +16,15 @@ export const SOLANA_MAINNET: Chain = {
   id: 501,
   name: "Solana",
   rpcUrls: {
-    default: "https://api.mainnet-beta.solana.com",
-    privyWalletOverride: "https://api.mainnet-beta.solana.com",
+    default:
+      process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+      "https://api.mainnet-beta.solana.com",
+    privyWalletOverride:
+      process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
+      "https://api.mainnet-beta.solana.com",
+    helius:
+      process.env.NEXT_PUBLIC_HELIUS_RPC_URL ||
+      "https://mainnet.helius-rpc.com/?api-key=YOUR_HELIUS_API_KEY",
   },
   blockExplorerUrls: ["https://explorer.solana.com"],
   nativeCurrency: { name: "Solana", symbol: "SOL", decimals: 9 },
