@@ -415,11 +415,11 @@ The first step involved **building a prototype** using **React**, focusing on st
 
 ## Next Steps
 
-1. Подключить взаимодействие с AI моделью:
+1. Connect the interaction with the AI model:
 
-   - 1.1. При написании запроса пользователем и нажатии на кнопку отправления, отправлять запрос на AI модель и переходить страницу /chats/<uuid4> на новый чат с именем "New Chat", затем присваивать ему имя в соответствии с запросом пользователя и <uuid4>, который будет с ним ассоциироваться. Страница /chats будет похожа на OpenAI ChatGPT, т.е. слева также будет все тот же Sidebar, а справа будет центральный виджет, где будет отображаться чат с AI моделью.
-   - 1.2. Если пользователь выбрал один из suggestion'ов или написал свой запрос, то повторять шаг 1.1 в соответствии с выбранной ИИ моделью.
-   - 1.3. Если пользователь нажал на кнопку "Stop", то прекратить взаимодействие с AI моделью.
-   - 1.4. Если пользователь нажал на кнопку "Delete", то удалить чат из списка чатов и перейти на главную страницу.
+   - 1.1. When the user writes a request and clicks the send button, send the request to the AI model and go to the page /chats/<uuid4> with the new chat name "New Chat", then assign it a name in accordance with the user's request and <uuid4>, which will be associated with it. The /chats page will be similar to OpenAI ChatGPT, i.e., the left sidebar will be the same, and the right side will be the central widget, where the chat with the AI model will be displayed.
+   - 1.2. If the user selected one of the suggestions or wrote their own request, repeat step 1.1 in accordance with the selected AI model.
+   - 1.3. If the user clicked the "Stop" button, stop the interaction with the AI model.
+   - 1.4. If the user clicked the "Delete" button, delete the chat from the list of chats and go to the main page.
 
-2.
+2. 
