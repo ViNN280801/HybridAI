@@ -422,4 +422,102 @@ The first step involved **building a prototype** using **React**, focusing on st
    - 1.3. If the user clicked the "Stop" button, stop the interaction with the AI model.
    - 1.4. If the user clicked the "Delete" button, delete the chat from the list of chats and go to the main page.
 
-2. 
+**Important:**
+
+- All the AI models should be preconfigured for themes: web3, trading, crypto, NFTs, staking, DeFi, etc.
+- Prompt pool you can find in `src/lib/prompt-pool.ts` file.
+
+1. Chats page:
+
+   - 2.1. The page will be similar to OpenAI ChatGPT, i.e., the left sidebar will be the same, and the right side will be the central widget, where the chat with the AI model will be displayed.
+   - 2.2. "Chats" menu item in the sidebar will have options: "Add", "Rename", "Delete".
+   - 2.3. Firebase Collections and Structure:
+
+#### `users` Collection
+
+Each user will have an entry in the users collection, which contains the list of chat IDs that belong to them.
+Example document in `users/{userID}`
+
+```json
+{
+  "userID": "d8a92f0a-1234-5678-abcd-ef9012345678",
+  "walletAddress": "A1b2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q7R8S9T0",
+  "emails": ["user@example.com"],
+  "xac": "@username_x",
+  "googleAcc": "user@gmail.com",
+  "chatIDs": ["chat_123", "chat_456"],
+  "lastLogin": "2024-02-12T12:00:00Z"
+}
+```
+
+The `chatIDs` field stores an array of chat IDs belonging to the user. When a new chat is created, its chatID is added to this list.
+
+#### `chats` Collection
+
+Each chat will be stored as a separate document in the chats collection. The chat messages will be embedded inside the chat document as an array.
+Example document in `chats/{chatID}`
+
+```json
+{
+  "chatID": "chat_123",
+  "userID": "d8a92f0a-1234-5678-abcd-ef9012345678",
+  "chatName": "Solana Discussion",
+  "chatModel": "gpt-4-turbo",
+  "messages": [
+    {
+      "sender": "user",
+      "text": "What are the latest Solana trends?",
+      "timestamp": "2024-02-12T12:01:00Z"
+    },
+    {
+      "sender": "assistant",
+      "text": "Solana is gaining traction in DeFi...",
+      "timestamp": "2024-02-12T12:02:00Z"
+    }
+  ],
+  "createdAt": "2024-02-12T12:00:00Z"
+}
+```
+
+- **chatID** – Unique identifier of the chat.
+- **userID** – Links the chat to the owner (users/{userID}).
+- **chatName** – The name of the chat, which can be renamed.
+- **chatModel** – The AI model used in this conversation (e.g., OpenAI, DeepSeek, Claude, Gemini).
+- **messages[]** – Array of messages in the conversation.
+- **createdAt** – Timestamp when the chat was created.
+
+#### Adding a new chat
+
+- A new document is created in the chats collection.
+- The generated chatID is added to the chatIDs array in the users/{userID} document.
+- The sidebar updates to display the newly created chat.
+
+#### Renaming a chat
+
+- User selects a chat and provides a new name.
+- Firestore updates the chatName field of the selected chat.
+- The sidebar reflects the updated chat name.
+
+#### Deleting a chat
+
+- The chat document is deleted from Firestore.
+- The corresponding chatID is removed from the users/{userID} document.
+- The sidebar updates to reflect the deletion.
+
+#### Support offline mode
+
+Since Firestore charges per read operation, we implement IndexedDB caching for faster performance and offline support.
+
+### Further plans:
+
+- Add NFT Lab.
+- Add staking mechanism.
+- Add AI-agents for:
+  - Trading
+  - Staking
+  - Swapping
+- TradingView integration for the technical analysis.
+
+> **Important to notice:** we are working only on Solana network for now and using only Phantom wallet, but in TradingView bot we will use multi-chain support, not to restrict users to use only Solana.
+
+All the details will be provided later.
