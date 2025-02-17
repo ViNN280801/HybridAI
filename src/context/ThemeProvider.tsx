@@ -9,9 +9,22 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const savedTheme = (localStorage.getItem("theme") as Theme) || "dark";
-    setTheme(savedTheme);
-    document.body.classList.toggle("light-theme", savedTheme === "light");
+    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+      .matches
+      ? "dark"
+      : "light";
+
+    let initialTheme: Theme | null = null;
+    if (systemTheme === "dark") {
+      initialTheme = "dark";
+    } else if (systemTheme === "light") {
+      initialTheme = "light";
+    } else {
+      initialTheme = systemTheme;
+    }
+
+    setTheme(initialTheme);
+    document.body.classList.toggle("light-theme", initialTheme === "light");
   }, []);
 
   const toggleTheme = () => {

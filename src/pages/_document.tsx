@@ -14,20 +14,13 @@ export default function Document() {
   return (
     <Html lang="en">
       <Head>
+        {/* Default favicon is white without any background and borders */}
         <link
+          id="favicon"
           rel="icon"
-          href="/favicon-light.ico"
-          media="(prefers-color-scheme: light)"
+          href="/favicon_white.ico"
           type="image/x-icon"
         />
-        <link
-          rel="icon"
-          href="/favicon-dark.ico"
-          media="(prefers-color-scheme: dark)"
-          type="image/x-icon"
-        />
-
-        <link rel="icon" href="/favicon-dark.ico" type="image/x-icon" />
 
         <link
           rel="preload"
@@ -45,6 +38,31 @@ export default function Document() {
         <Link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"
+        />
+
+        {/* Script to handle theme-based favicon */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+                
+                function updateFavicon(e) {
+                  const favicon = document.getElementById('favicon');
+                  if (favicon) {
+                    // If dark theme -> light favicon, if light theme -> dark favicon
+                    favicon.href = e.matches ? '/favicon_white.ico' : '/favicon_black.ico';
+                  }
+                }
+
+                // Set initial favicon
+                updateFavicon(mediaQuery);
+                
+                // Update favicon on theme change
+                mediaQuery.addListener(updateFavicon);
+              })();
+            `,
+          }}
         />
       </Head>
       <body>
