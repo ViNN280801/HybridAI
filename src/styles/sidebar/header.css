@@ -16,6 +16,10 @@
   text-decoration: none;
 }
 
+.logo-container img {
+  transition: opacity 0.3s ease-in-out;
+}
+
 .logo-text {
   color: var(--text-color);
   font-size: 20px;

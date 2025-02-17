@@ -16,10 +16,32 @@ export default function Document() {
       <Head>
         <link
           rel="icon"
-          href="/missing_texture.png"
-          type="image/png"
-          sizes="48x48"
+          href="/favicon-light.ico"
+          media="(prefers-color-scheme: light)"
+          type="image/x-icon"
         />
+        <link
+          rel="icon"
+          href="/favicon-dark.ico"
+          media="(prefers-color-scheme: dark)"
+          type="image/x-icon"
+        />
+
+        <link rel="icon" href="/favicon-dark.ico" type="image/x-icon" />
+
+        <link
+          rel="preload"
+          href="/hybridai_logo_white.webp"
+          as="image"
+          type="image/webp"
+        />
+        <link
+          rel="preload"
+          href="/hybridai_logo_black.svg"
+          as="image"
+          type="image/svg+xml"
+        />
+
         <Link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0"

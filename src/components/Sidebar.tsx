@@ -28,6 +28,17 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
     >
       <div className="sidebar-header">
         <Link href="/" className="logo-container">
+          <Image
+            src={
+              theme === "dark"
+                ? "/hybridai_logo_white.webp"
+                : "/hybridai_logo_black.svg"
+            }
+            alt="HybridAI Logo"
+            width={48}
+            height={48}
+            key={theme}
+          />
           <span className="logo-text">Hybrid.AI</span>
         </Link>
       </div>
