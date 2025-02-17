@@ -22,6 +22,22 @@ interface CachedWallet {
 const MAX_RETRY_ATTEMPTS = 3;
 const CACHE_EXPIRATION_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
 
+const PHANTOM_DOWNLOAD_LINKS: Record<string, string> = {
+  chrome:
+    "https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa",
+  firefox: "https://addons.mozilla.org/firefox/addon/phantom-app/",
+  safari: "https://apps.apple.com/app/phantom-solana-wallet/1598432977",
+  other: "https://phantom.app/download",
+};
+
+const getBrowser = (): keyof typeof PHANTOM_DOWNLOAD_LINKS => {
+  const ua = navigator.userAgent;
+  if (ua.includes("Firefox")) return "firefox";
+  if (ua.includes("Chrome")) return "chrome";
+  if (ua.includes("Safari")) return "safari";
+  return "other";
+};
+
 declare global {
   interface Window {
     phantom?: {
@@ -143,10 +159,10 @@ export default function useSolana() {
 
         setWalletPublicKey(null);
         setIsConnected(false);
-        throw error;
+        setError(`Connection error: ${error}. Please try later.`);
       }
     },
-    [fetchBalance, switchToNextRpc, rpcUrls.length]
+    [fetchBalance, switchToNextRpc, rpcUrls.length, setError]
   );
 
   const { auth } = useMemo(() => initializeFirebase(), []);
@@ -177,10 +193,14 @@ export default function useSolana() {
           error instanceof Error
             ? `Wallet linking failed: ${error.message}`
             : "Unknown error during wallet linking";
-        throw new Error(errorMessage);
+        setError(errorMessage);
+
+        setWalletPublicKey(null);
+        setIsConnected(false);
+        localStorage.removeItem("cachedWallet");
       }
     },
-    [auth]
+    [auth, setError]
   );
 
   /**
@@ -189,32 +209,81 @@ export default function useSolana() {
    */
   const connectWallet = useCallback(async () => {
     try {
-      // Anonymous authentication when first connecting
       if (!auth.currentUser) {
-        await signInAnonymously(auth);
+        await signInAnonymously(auth).catch((error) => {
+          setError(
+            `Authentication failed: ${error.message}. Please check your internet connection.`
+          );
+        });
       }
 
-      // Connecting the Phantom wallet
       const phantom = window.phantom?.solana;
       if (!phantom) {
-        throw new Error("Phantom wallet not detected");
+        const browser = getBrowser();
+        useStore
+          .getState()
+          .setError(
+            `Phantom Wallet extension not detected. Required for operation.\n\n` +
+              `Install for ${browser.toUpperCase()}: ${PHANTOM_DOWNLOAD_LINKS[browser]}\n\n` +
+              "If you already have Phantom installed, please refresh the page."
+          );
+        return;
       }
 
       if (!phantom.connected) {
-        await phantom.connect();
+        try {
+          await phantom.connect();
+        } catch (error) {
+          // Check for user rejection
+          if (
+            error instanceof Error &&
+            (error.message.includes("User rejected") ||
+              error.message.includes("User rejected the request"))
+          ) {
+            // Silent handling - just redirect to home
+            window.location.href = "/";
+            return;
+          }
+          // Handle other connection errors
+          useStore
+            .getState()
+            .setError(
+              `Wallet connection failed: ${error instanceof Error ? error.message : "Unknown error"}\n\n` +
+                "Common solutions:\n" +
+                "1. Refresh the page\n" +
+                "2. Check Phantom extension permissions\n" +
+                "3. Update Phantom to latest version"
+            );
+        }
       }
 
       const publicKey = phantom.publicKey?.toString();
       if (!publicKey) {
-        throw new Error("Failed to get public key");
+        setError(
+          "Failed to get public key. Please try again later or contact support. \n\n" +
+            "Or maybe you have not installed Phantom Wallet extension or not set it up properly."
+        );
+        return;
       }
 
       // Bind the wallet to the anonymous account
       await linkWalletToAnonymousAccount(publicKey);
     } catch (error) {
-      console.error("Error connecting wallet:", error);
+      // Handle other errors
+      console.error("Wallet connection process error:", error);
+      useStore
+        .getState()
+        .setError(
+          `Critical error during wallet connection:\n${
+            error instanceof Error ? error.message : "Unknown system error"
+          }\n\n` + "Please contact support if this persists or try again later."
+        );
+
+      setWalletPublicKey(null);
+      setIsConnected(false);
+      localStorage.removeItem("cachedWallet");
     }
-  }, [linkWalletToAnonymousAccount, auth]);
+  }, [linkWalletToAnonymousAccount, auth, setError]);
 
   /**
    * disconnectWallet disconnects from the wallet and clears the local state and cache.
