@@ -11,6 +11,7 @@ import {
   query,
   limit,
   serverTimestamp,
+  where,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuth } from "firebase/auth";
@@ -59,41 +60,54 @@ export async function createOrUpdateUser(user: User): Promise<void> {
   try {
     const auth = getAuth();
     if (!auth.currentUser) {
-      throw new Error("User is not authenticated!");
+      throw new Error("User authentication failed");
     }
-    const userId = auth.currentUser.uid;
 
     const usersCollection =
       process.env.NEXT_PUBLIC_HYBRIDAI_DEFAULT_USERS_COLLECTION;
-    if (!usersCollection) {
-      throw new Error(
-        "runTransaction() inside createOrUpdateUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
-      );
-    }
+    if (!usersCollection) throw new Error("Collection name not defined");
 
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, usersCollection, userId);
+      const walletQuery = query(
+        collection(db, usersCollection),
+        where("cryptowallet", "==", user.cryptowallet),
+        limit(1)
+      );
+      const walletSnapshot = await getDocs(walletQuery);
+
+      if (!walletSnapshot.empty) {
+        const existingUserDoc = walletSnapshot.docs[0];
+        const userRef = doc(db, usersCollection, existingUserDoc.id);
+        transaction.update(userRef, {
+          ...user,
+          updatedAt: serverTimestamp(),
+        });
+        return;
+      }
+
+      const userRef = doc(
+        db,
+        usersCollection,
+        auth.currentUser?.uid || "invalid_uid"
+      );
       const userSnap = await transaction.get(userRef);
 
       if (!userSnap.exists()) {
         transaction.set(userRef, {
-          id: userId,
-          cryptowallet: user.cryptowallet,
-          chatIds: [],
+          ...user,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         });
       } else {
         transaction.update(userRef, {
-          cryptowallet: user.cryptowallet,
+          ...user,
           updatedAt: serverTimestamp(),
         });
       }
     });
   } catch (error) {
-    throw new Error(
-      `Failed to create or update user: ${(error as Error).message}`
-    );
+    console.error("User operation failed:", error);
+    throw error;
   }
 }
 
