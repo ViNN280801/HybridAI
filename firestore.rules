@@ -1,19 +1,38 @@
+// HybridAI/firestore.rules
+
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Users collection
     match /users/{userId} {
+      // Function to check if wallet is unique
+      function isWalletUnique() {
+        let walletToCheck = request.resource.data.cryptowallet;
+        return !exists(/databases/$(database)/documents/users/$(userId)) ||
+        !exists(/databases/$(database)/documents/users/$(userId)) ||
+        resource.data.cryptowallet == walletToCheck ||
+        !exists(
+        /databases/$(database)/documents/users/
+        where('cryptowallet', '==', walletToCheck)
+        );
+      }
+
       allow create: if 
       request.auth != null &&
       userId == request.auth.uid &&
       request.auth.token.firebase.sign_in_provider == 'anonymous' &&
       request.resource.data.id == userId &&
-      request.resource.data.cryptowallet is string;
+      request.resource.data.cryptowallet is string &&
+      isWalletUnique();
 
       allow update: if 
       request.auth != null &&
       userId == request.auth.uid &&
-      request.resource.data.cryptowallet is string;
+      request.resource.data.cryptowallet is string &&
+      (
+      request.resource.data.cryptowallet == resource.data.cryptowallet ||
+      isWalletUnique()
+      );
 
       allow read: if request.auth != null && userId == request.auth.uid;
     }
