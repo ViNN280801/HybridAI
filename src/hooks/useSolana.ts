@@ -177,11 +177,6 @@ export default function useSolana() {
           error instanceof Error
             ? `Wallet linking failed: ${error.message}`
             : "Unknown error during wallet linking";
-
-        console.error("Linking error details:", {
-          error,
-          publicKey,
-        });
         throw new Error(errorMessage);
       }
     },

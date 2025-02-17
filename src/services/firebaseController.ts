@@ -12,6 +12,8 @@ import {
   limit,
   serverTimestamp,
   where,
+  setDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuth } from "firebase/auth";
@@ -67,47 +69,32 @@ export async function createOrUpdateUser(user: User): Promise<void> {
       process.env.NEXT_PUBLIC_HYBRIDAI_DEFAULT_USERS_COLLECTION;
     if (!usersCollection) throw new Error("Collection name not defined");
 
-    await runTransaction(db, async (transaction) => {
-      const walletQuery = query(
-        collection(db, usersCollection),
-        where("cryptowallet", "==", user.cryptowallet),
-        limit(1)
-      );
-      const walletSnapshot = await getDocs(walletQuery);
+    const userRef = doc(db, usersCollection, auth.currentUser.uid);
+    const userDoc = await getDoc(userRef);
 
-      if (!walletSnapshot.empty) {
-        const existingUserDoc = walletSnapshot.docs[0];
-        const userRef = doc(db, usersCollection, existingUserDoc.id);
-        transaction.update(userRef, {
-          ...user,
-          updatedAt: serverTimestamp(),
-        });
-        return;
-      }
-
-      const userRef = doc(
-        db,
-        usersCollection,
-        auth.currentUser?.uid || "invalid_uid"
-      );
-      const userSnap = await transaction.get(userRef);
-
-      if (!userSnap.exists()) {
-        transaction.set(userRef, {
-          ...user,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
-      } else {
-        transaction.update(userRef, {
-          ...user,
-          updatedAt: serverTimestamp(),
-        });
-      }
-    });
+    // If there is no user document, create it
+    if (!userDoc.exists()) {
+      await setDoc(userRef, {
+        ...user,
+        id: auth.currentUser.uid,
+        cryptowallet: user.cryptowallet,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+    }
+    // If the user document exists, update it
+    else {
+      await updateDoc(userRef, {
+        ...user,
+        cryptowallet: user.cryptowallet,
+        updatedAt: serverTimestamp(),
+      });
+    }
   } catch (error) {
     console.error("User operation failed:", error);
-    throw error;
+    throw new Error(
+      `Failed to create/update user: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
 }
 
@@ -294,21 +281,22 @@ export async function getChats(userId: string): Promise<Chat[]> {
 export async function getCurrentUser(
   walletAddress: string
 ): Promise<User | null> {
-  try {
-    const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
-    if (!usersCollection) {
-      throw new Error(
-        "getCurrentUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
-      );
-    }
-    const userRef = doc(db, usersCollection, walletAddress);
-    const userSnap = await getDoc(userRef);
-    return userSnap.exists()
-      ? ({ id: userSnap.id, ...userSnap.data() } as User)
-      : null;
-  } catch (error) {
-    throw new Error(`Failed to get user: ${(error as Error).message}`);
+  const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+  if (!usersCollection) {
+    throw new Error(
+      "getCurrentUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
+    );
   }
+
+  const q = query(
+    collection(db, usersCollection),
+    where("cryptowallet", "==", walletAddress),
+    limit(1)
+  );
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.empty) return null;
+  const userSnap = querySnapshot.docs[0];
+  return { id: userSnap.id, ...userSnap.data() } as User;
 }
 
 export async function checkWalletConnection(
