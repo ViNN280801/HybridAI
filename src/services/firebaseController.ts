@@ -10,8 +10,10 @@ import {
   getDocs,
   query,
   limit,
+  serverTimestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { getAuth } from "firebase/auth";
 
 /**
  * User interface representing the user document structure.
@@ -19,9 +21,6 @@ import { db } from "@/lib/firebase";
 export interface User {
   id: string;
   cryptowallet: string;
-  emails: string[];
-  googleAcc?: string;
-  xAcc?: string;
   chatIds: string[];
 }
 
@@ -39,15 +38,16 @@ export interface Chat {
  * Validates collection existence before operations
  * @throws {Error} When collection doesn't exist
  */
-async function validateCollection(collectionName: string): Promise<void> {
+export const validateCollection = async (collectionName: string) => {
   const colRef = collection(db, collectionName);
-  const queryRef = query(colRef, limit(1));
-  const snapshot = await getDocs(queryRef);
-
-  if (snapshot.empty && process.env.NODE_ENV !== "production") {
-    console.warn(`Collection '${collectionName}' is empty or doesn't exist`);
+  try {
+    await getDocs(query(colRef, limit(1)));
+  } catch (error) {
+    throw new Error(
+      `Invalid collection '${collectionName}': ${error instanceof Error ? error.message : "Unknown error"}`
+    );
   }
-}
+};
 
 /**
  * Creates or updates a user document.
@@ -57,27 +57,37 @@ async function validateCollection(collectionName: string): Promise<void> {
  */
 export async function createOrUpdateUser(user: User): Promise<void> {
   try {
-    const usersCollection = process.env.HYBRIDAI_DEFAULT_USERS_COLLECTION;
+    const auth = getAuth();
+    if (!auth.currentUser) {
+      throw new Error("User is not authenticated!");
+    }
+    const userId = auth.currentUser.uid;
+
+    const usersCollection =
+      process.env.NEXT_PUBLIC_HYBRIDAI_DEFAULT_USERS_COLLECTION;
     if (!usersCollection) {
       throw new Error(
         "runTransaction() inside createOrUpdateUser(): HYBRIDAI_DEFAULT_USERS_COLLECTION is not defined. Check environment variables."
       );
     }
 
-    await validateCollection(usersCollection);
-
     await runTransaction(db, async (transaction) => {
-      const userRef = doc(db, usersCollection, user.id);
+      const userRef = doc(db, usersCollection, userId);
       const userSnap = await transaction.get(userRef);
 
-      if (userSnap.exists()) {
-        // Update existing user document using atomic update for arrays
-        transaction.update(userRef, {
-          emails: arrayUnion(...user.emails),
+      if (!userSnap.exists()) {
+        transaction.set(userRef, {
+          id: userId,
+          cryptowallet: user.cryptowallet,
+          chatIds: [],
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
         });
       } else {
-        // Create new user document with all required fields
-        transaction.set(userRef, user);
+        transaction.update(userRef, {
+          cryptowallet: user.cryptowallet,
+          updatedAt: serverTimestamp(),
+        });
       }
     });
   } catch (error) {

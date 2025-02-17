@@ -9,6 +9,8 @@ export default function WalletInfo() {
 
   const [isCopied, setIsCopied] = useState(false);
 
+  if (!isConnected) return null;
+
   const copyAddress = async () => {
     if (!walletPublicKey) return;
     try {

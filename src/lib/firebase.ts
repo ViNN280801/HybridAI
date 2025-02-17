@@ -10,7 +10,12 @@
 
 import { initializeApp, type FirebaseApp } from "firebase/app";
 import { getFirestore, type Firestore } from "firebase/firestore";
-import { getAuth, type Auth } from "firebase/auth";
+import {
+  getAuth,
+  signInAnonymously,
+  type User,
+  type Auth,
+} from "firebase/auth";
 
 /**
  * Custom error class for Firebase configuration validation failures
@@ -18,17 +23,14 @@ import { getAuth, type Auth } from "firebase/auth";
  * @extends Error
  * @property {string} name - Error type identifier
  * @property {string} field - Problematic configuration field name
- * @property {boolean} isProduction - Environment flag
  */
 class FirebaseConfigError extends Error {
   readonly field: string;
-  readonly isProduction: boolean;
 
-  constructor(field: string, message: string, isProduction: boolean) {
+  constructor(field: string, message: string) {
     super(message);
     this.name = "FirebaseConfigError";
     this.field = field;
-    this.isProduction = isProduction;
 
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, FirebaseConfigError);
@@ -40,9 +42,7 @@ class FirebaseConfigError extends Error {
    * @returns {string} Appropriate error message for current environment
    */
   public get userMessage(): string {
-    return this.isProduction
-      ? "Service configuration error. Please contact support."
-      : `Configuration error: ${this.message}`;
+    return `Configuration error: ${this.message}`;
   }
 }
 
@@ -68,8 +68,6 @@ class FirebaseInitializationError extends Error {
  * @throws {FirebaseConfigError} When any required field is missing or invalid
  */
 const validateFirebaseConfig = (config: Record<string, unknown>): void => {
-  const isProduction =
-    process.env.NODE_ENV === process.env.HYBRIDAI_DEFAULT_PROD;
   const configFields = {
     apiKey: "API key for Firebase services",
     authDomain: "Authentication domain",
@@ -83,11 +81,7 @@ const validateFirebaseConfig = (config: Record<string, unknown>): void => {
   for (const [field, description] of Object.entries(configFields)) {
     if (!config[field]) {
       const devMessage = `Missing ${description} (${field}). Check environment variables.`;
-      throw new FirebaseConfigError(
-        field,
-        isProduction ? `Missing ${field}` : devMessage,
-        isProduction
-      );
+      throw new FirebaseConfigError(field, devMessage);
     }
   }
 };
@@ -97,11 +91,19 @@ const validateFirebaseConfig = (config: Record<string, unknown>): void => {
  * @returns {Object} Initialized Firebase services
  * @throws {FirebaseInitializationError} When initialization fails
  */
-const initializeFirebase = (): {
+export const initializeFirebase = (): {
   firebaseApp: FirebaseApp;
   db: Firestore;
   auth: Auth;
 } => {
+  let firebaseApp: FirebaseApp | null = null;
+  let db: Firestore | null = null;
+  let auth: Auth | null = null;
+
+  if (firebaseApp && db && auth) {
+    return { firebaseApp, db, auth };
+  }
+
   try {
     const firebaseConfig = {
       apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -115,13 +117,9 @@ const initializeFirebase = (): {
 
     validateFirebaseConfig(firebaseConfig);
 
-    const firebaseApp = initializeApp(firebaseConfig);
-    const db = getFirestore(firebaseApp);
-    const auth = getAuth(firebaseApp);
-
-    if (process.env.NODE_ENV === process.env.HYBRIDAI_DEFAULT_DEV) {
-      console.debug("Firebase services initialized successfully");
-    }
+    firebaseApp = initializeApp(firebaseConfig);
+    db = getFirestore(firebaseApp);
+    auth = getAuth(firebaseApp);
 
     return { firebaseApp, db, auth };
   } catch (error) {
@@ -130,12 +128,22 @@ const initializeFirebase = (): {
         ? error.userMessage
         : `Initialization failed: ${error instanceof Error ? error.message : "Unknown error"}`;
 
-    if (process.env.NODE_ENV !== process.env.HYBRIDAI_DEFAULT_PROD) {
-      console.error("Firebase initialization error details:", error);
-    }
-
     throw new FirebaseInitializationError(errorMessage);
   }
 };
 
 export const { firebaseApp, db, auth } = initializeFirebase();
+
+export const initializeAnonymousAuth = async (): Promise<User> => {
+  try {
+    const { auth } = initializeFirebase();
+    const credential = await signInAnonymously(auth);
+    return credential.user;
+  } catch (error) {
+    throw new FirebaseInitializationError(
+      `Anonymous auth failed: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+};
+
+export { signInAnonymously };

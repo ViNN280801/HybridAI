@@ -19,7 +19,9 @@ export const SOLANA_MAINNET: Chain = {
     default:
       process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
       "https://api.mainnet-beta.solana.com",
-    helius: process.env.NEXT_PUBLIC_HELIUS_RPC_URL as string,
+    helius:
+      process.env.NEXT_PUBLIC_HELIUS_RPC_URL ||
+      "https://mainnet.helius-rpc.com",
   },
   blockExplorerUrls: ["https://explorer.solana.com"],
   nativeCurrency: { name: "Solana", symbol: "SOL", decimals: 9 },

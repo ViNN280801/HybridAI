@@ -11,7 +11,9 @@ import ErrorModal from "@/components/Modals/ErrorModal";
  */
 const AuthModal: React.FC = () => {
   const { error } = useStore();
-  const { connectWallet } = useSolana();
+  const { isConnected, connectWallet } = useSolana();
+
+  if (isConnected) return null;
 
   return (
     <div className="auth-modal">

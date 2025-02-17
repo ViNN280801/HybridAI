@@ -2,62 +2,15 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
-import {
-  WalletAdapter,
-  WalletAdapterEvents,
-  EventEmitter,
-} from "@solana/wallet-adapter-base";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import useStore from "@/lib/store";
 import {
   createOrUpdateUser,
   getCurrentUser,
 } from "@/services/firebaseController";
 import { SOLANA_MAINNET } from "@/config/chains";
-
-// Define the interface for the Phantom provider
-interface SolanaProvider {
-  isPhantom?: boolean;
-  isConnected: boolean;
-  publicKey?: PublicKey;
-  connect: () => Promise<{ publicKey: PublicKey }>;
-  disconnect: () => Promise<void>;
-  on: (
-    event: "connect" | "disconnect",
-    handler: (publicKey: PublicKey) => void
-  ) => void;
-  off: (
-    event: "connect" | "disconnect",
-    handler: (publicKey: PublicKey) => void
-  ) => void;
-}
-
-// Extend the global Window interface
-declare global {
-  interface Window {
-    solana?: SolanaProvider;
-    phantom?: {
-      solana: PhantomWalletAdapter;
-    };
-  }
-}
-
-interface PhantomWalletAdapter
-  extends WalletAdapter,
-    EventEmitter<WalletAdapterEvents> {
-  isConnected: boolean;
-  isPhantom?: boolean;
-  publicKey: PublicKey | null;
-  connect: () => Promise<void>;
-  disconnect: () => Promise<void>;
-}
-
-const PHANTOM_DOWNLOAD_LINKS: Record<string, string> = {
-  chrome:
-    "https://chrome.google.com/webstore/detail/phantom/bfnaelmomeimhlpmgjnjophhpkkoljpa",
-  firefox: "https://addons.mozilla.org/firefox/addon/phantom-app/",
-  safari: "https://apps.apple.com/app/phantom-solana-wallet/1598432977",
-  other: "https://phantom.app/download",
-};
+import { initializeFirebase, signInAnonymously } from "@/lib/firebase";
+import { updateProfile } from "firebase/auth";
 
 // Interface for data saved in localStorage
 interface CachedWallet {
@@ -69,6 +22,25 @@ interface CachedWallet {
 const MAX_RETRY_ATTEMPTS = 3;
 const CACHE_EXPIRATION_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
 
+declare global {
+  interface Window {
+    phantom?: {
+      solana?: PhantomWalletAdapter;
+    };
+    solana?: PhantomWalletAdapter & {
+      isPhantom?: boolean;
+      on?: <T extends PublicKey | undefined>(
+        event: "connect" | "disconnect",
+        callback: (publicKey: T) => void
+      ) => void;
+      off?: <T extends PublicKey | undefined>(
+        event: "connect" | "disconnect",
+        callback: (publicKey: T) => void
+      ) => void;
+    };
+  }
+}
+
 export default function useSolana() {
   const { setError } = useStore();
 
@@ -78,18 +50,32 @@ export default function useSolana() {
   const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
 
   // Getting the list of RPC endpoints
-  const rpcUrls = useMemo(() => Object.values(SOLANA_MAINNET.rpcUrls), []);
-  const currentRpcUrl = rpcUrls[currentRpcIndex];
+  const rpcUrls = useMemo(() => {
+    const urls = Object.values(SOLANA_MAINNET.rpcUrls).filter(
+      (url) => typeof url === "string" && url.length > 0
+    );
+
+    if (urls.length === 0) {
+      throw new Error("No valid RPC endpoints found in SOLANA_MAINNET config");
+    }
+
+    return urls;
+  }, []);
+
+  const safeRpcIndex = currentRpcIndex % rpcUrls.length;
+  const currentRpcUrl = rpcUrls[safeRpcIndex];
 
   /**
    * Switches to the next available RPC endpoint
    * @returns {string} Next RPC URL
    */
   const switchToNextRpc = useCallback(() => {
-    const nextIndex = (currentRpcIndex + 1) % rpcUrls.length;
-    setCurrentRpcIndex(nextIndex);
-    return rpcUrls[nextIndex];
-  }, [currentRpcIndex, rpcUrls]);
+    setCurrentRpcIndex((prev) => {
+      const nextIndex = (prev + 1) % rpcUrls.length;
+      return nextIndex;
+    });
+    return rpcUrls[(currentRpcIndex + 1) % rpcUrls.length];
+  }, [rpcUrls, currentRpcIndex]);
 
   // Connection to Solana RPC
   const connection = useMemo(
@@ -101,6 +87,8 @@ export default function useSolana() {
       }),
     [currentRpcUrl]
   );
+
+  const phantomAdapter = useMemo(() => new PhantomWalletAdapter(), []);
 
   /**
    * Updates the wallet balance with automatic reconnection
@@ -127,34 +115,6 @@ export default function useSolana() {
     [connection, setError, switchToNextRpc]
   );
 
-  // Define the browser for the Phantom download link
-  const getBrowser = (): "chrome" | "firefox" | "safari" | "other" => {
-    const ua = navigator.userAgent;
-    if (ua.includes("Firefox")) return "firefox";
-    if (ua.includes("Chrome")) return "chrome";
-    if (ua.includes("Safari")) return "safari";
-    return "other";
-  };
-
-  /**
-   * handlePhantomError – output error or recommendation to install Phantom.
-   */
-  const handlePhantomError = (error: Error) => {
-    const browser = getBrowser();
-    if (!window.phantom) {
-      setError(
-        `Need to install Phantom Wallet. Download for ${browser}: ${PHANTOM_DOWNLOAD_LINKS[browser]}`
-      );
-      return;
-    }
-    setError(error.message);
-  };
-
-  const getPhantomNotInstalledError = (): string => {
-    const browser = getBrowser();
-    return `Phantom Wallet is required. Install for ${browser}: ${PHANTOM_DOWNLOAD_LINKS[browser]}`;
-  };
-
   // Update handleWalletConnection with reconnection mechanism
   const handleWalletConnection = useCallback(
     async (publicKey: string, retryCount = 0): Promise<void> => {
@@ -164,7 +124,6 @@ export default function useSolana() {
         await createOrUpdateUser({
           id: publicKey,
           cryptowallet: publicKey,
-          emails: [],
           chatIds: [],
         });
         setWalletPublicKey(publicKey);
@@ -190,90 +149,96 @@ export default function useSolana() {
     [fetchBalance, switchToNextRpc, rpcUrls.length]
   );
 
+  const { auth } = useMemo(() => initializeFirebase(), []);
+
+  /**
+   * Connects an anonymous account to a wallet
+   */
+  const linkWalletToAnonymousAccount = useCallback(
+    async (publicKey: string) => {
+      try {
+        const user = auth.currentUser;
+        if (!user || !user.isAnonymous) {
+          throw new Error("No anonymous session found");
+        }
+
+        await updateProfile(user, {
+          displayName: publicKey,
+          photoURL: `https://api.dicebear.com/7.x/identicon/svg?seed=${publicKey}`,
+        });
+
+        await createOrUpdateUser({
+          id: user.uid,
+          cryptowallet: publicKey,
+          chatIds: [],
+        });
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error
+            ? `Wallet linking failed: ${error.message}`
+            : "Unknown error during wallet linking";
+
+        console.error("Linking error details:", {
+          error,
+          publicKey,
+        });
+        throw new Error(errorMessage);
+      }
+    },
+    [auth]
+  );
+
   /**
    * connectWallet tries to connect to Phantom.
    * If the user rejects the request or Phantom is not installed – outputs an error.
    */
-  async function connectWallet() {
-    const originalConsoleError = console.error.bind(console);
+  const connectWallet = useCallback(async () => {
     try {
-      console.error = (...args: unknown[]) => {
-        const isUserRejection = args.some(
-          (arg) =>
-            typeof arg === "string" && arg.includes("User rejected the request")
-        );
-        if (!isUserRejection) originalConsoleError(...args);
-      };
-
-      if (!window.phantom) {
-        setError(
-          `Need to install Phantom Wallet. Download for ${getBrowser()}: ${PHANTOM_DOWNLOAD_LINKS[getBrowser()]}`
-        );
-        return;
-      }
-      if (!window.phantom.solana) {
-        throw new Error("phantom_not_installed");
+      // Anonymous authentication when first connecting
+      if (!auth.currentUser) {
+        await signInAnonymously(auth);
       }
 
-      const provider = window.phantom.solana;
-      setError(null);
-
-      if (!provider.isConnected) {
-        try {
-          await provider.connect();
-        } catch (error) {
-          if (
-            error instanceof Error &&
-            error.message.includes("User rejected the request")
-          ) {
-            setIsConnected(false);
-            setWalletPublicKey(null);
-            return;
-          }
-          throw error;
-        }
+      // Connecting the Phantom wallet
+      const phantom = window.phantom?.solana;
+      if (!phantom) {
+        throw new Error("Phantom wallet not detected");
       }
 
-      const publicKey = provider.publicKey?.toString();
+      if (!phantom.connected) {
+        await phantom.connect();
+      }
+
+      const publicKey = phantom.publicKey?.toString();
       if (!publicKey) {
-        setError("Can't get wallet address. Please reconnect.");
-        setIsConnected(false);
-        setWalletPublicKey(null);
-        return;
+        throw new Error("Failed to get public key");
       }
 
-      await handleWalletConnection(publicKey);
+      // Bind the wallet to the anonymous account
+      await linkWalletToAnonymousAccount(publicKey);
     } catch (error) {
-      if (error instanceof Error) {
-        if (error.message === "phantom_not_installed") {
-          setError(getPhantomNotInstalledError());
-          return;
-        }
-        if (!error.message.includes("User rejected the request")) {
-          handlePhantomError(error);
-        }
-      }
-    } finally {
-      console.error = originalConsoleError;
+      console.error("Error connecting wallet:", error);
     }
-  }
+  }, [linkWalletToAnonymousAccount, auth]);
 
   /**
    * disconnectWallet disconnects from the wallet and clears the local state and cache.
    */
   const disconnectWallet = useCallback(async () => {
-    if (window.phantom?.solana) {
-      try {
-        await window.phantom.solana.disconnect();
-      } catch (error) {
-        console.error("Error disconnecting:", error);
+    try {
+      await phantomAdapter.disconnect();
+      setWalletPublicKey(null);
+      setIsConnected(false);
+      setSolBalance(0);
+      localStorage.removeItem("cachedWallet");
+
+      if (window.solana?.isPhantom) {
+        window.solana.emit("disconnect");
       }
+    } catch (error) {
+      console.error("Disconnection error:", error);
     }
-    localStorage.removeItem("cachedWallet");
-    setWalletPublicKey(null);
-    setIsConnected(false);
-    setSolBalance(0);
-  }, []);
+  }, [phantomAdapter]);
 
   /**
    * checkCachedWallet checks if there is a cached address in localStorage and
@@ -313,7 +278,7 @@ export default function useSolana() {
   useEffect(() => {
     const init = async () => {
       const hasCachedWallet = await checkCachedWallet();
-      if (hasCachedWallet && window.phantom?.solana?.isConnected) {
+      if (hasCachedWallet && window.phantom?.solana?.connected) {
         const publicKey = window.phantom.solana.publicKey?.toString();
         if (publicKey) {
           try {
@@ -335,7 +300,8 @@ export default function useSolana() {
    * Listen for wallet connection/disconnection events (through window.solana).
    */
   useEffect(() => {
-    if (window.solana?.isPhantom) {
+    const solana = window.solana;
+    if (solana?.isPhantom) {
       const handleConnect = (publicKey: PublicKey) => {
         const keyStr = publicKey.toString();
         setWalletPublicKey(keyStr);
@@ -349,12 +315,12 @@ export default function useSolana() {
         setSolBalance(0);
       };
 
-      window.solana.on("connect", handleConnect);
-      window.solana.on("disconnect", handleDisconnect);
+      solana.on("connect", handleConnect);
+      solana.on("disconnect", handleDisconnect);
 
       return () => {
-        window.solana?.off("connect", handleConnect);
-        window.solana?.off("disconnect", handleDisconnect);
+        solana?.off("connect", handleConnect);
+        solana?.off("disconnect", handleDisconnect);
       };
     }
   }, [fetchBalance]);
