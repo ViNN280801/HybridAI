@@ -4,13 +4,8 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Connection, PublicKey, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import useStore from "@/lib/store";
-import {
-  createOrUpdateUser,
-  getCurrentUser,
-} from "@/services/firebaseController";
+import { createOrUpdateUser, getCurrentUser } from "@/services/userService";
 import { SOLANA_MAINNET } from "@/config/chains";
-import { initializeFirebase, signInAnonymously } from "@/lib/firebase";
-import { updateProfile } from "firebase/auth";
 
 // Interface for data saved in localStorage
 interface CachedWallet {
@@ -131,26 +126,58 @@ export default function useSolana() {
     [connection, setError, switchToNextRpc]
   );
 
+  const handleConnectionError = useCallback(
+    (error: unknown, context: string) => {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      console.error(`${context} error:`, error);
+      setError(`${context} error: ${errorMessage}`);
+    },
+    [setError]
+  );
+
+  const validateWalletState = useCallback(
+    async (publicKey: string) => {
+      try {
+        const user = await getCurrentUser(publicKey);
+        return !!user;
+      } catch (error) {
+        handleConnectionError(error, "Wallet validation");
+        return false;
+      }
+    },
+    [handleConnectionError]
+  );
+
+  const persistWalletState = useCallback((publicKey: string) => {
+    const cachedData: CachedWallet = {
+      publicKey,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("cachedWallet", JSON.stringify(cachedData));
+    setWalletPublicKey(publicKey);
+    setIsConnected(true);
+  }, []);
+
   // Update handleWalletConnection with reconnection mechanism
   const handleWalletConnection = useCallback(
     async (publicKey: string, retryCount = 0): Promise<void> => {
       const MAX_RETRIES = rpcUrls.length;
 
       try {
-        await createOrUpdateUser({
-          id: publicKey,
-          cryptowallet: publicKey,
-          chatIds: [],
-        });
-        setWalletPublicKey(publicKey);
-        setIsConnected(true);
+        if (!(await validateWalletState(publicKey))) return;
+
+        await createOrUpdateUser(publicKey);
         await fetchBalance(publicKey);
-        const cachedData: CachedWallet = {
-          publicKey,
-          timestamp: Date.now(),
-        };
-        localStorage.setItem("cachedWallet", JSON.stringify(cachedData));
+        persistWalletState(publicKey);
       } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "Wallet already registered"
+        ) {
+          setError("This wallet is already registered");
+          return;
+        }
         if (retryCount < MAX_RETRIES - 1) {
           const nextRpc = switchToNextRpc();
           console.warn(`Connection failed. Switching to ${nextRpc}`);
@@ -162,45 +189,14 @@ export default function useSolana() {
         setError(`Connection error: ${error}. Please try later.`);
       }
     },
-    [fetchBalance, switchToNextRpc, rpcUrls.length, setError]
-  );
-
-  const { auth } = useMemo(() => initializeFirebase(), []);
-
-  /**
-   * Connects an anonymous account to a wallet
-   */
-  const linkWalletToAnonymousAccount = useCallback(
-    async (publicKey: string) => {
-      try {
-        const user = auth.currentUser;
-        if (!user || !user.isAnonymous) {
-          throw new Error("No anonymous session found");
-        }
-
-        await updateProfile(user, {
-          displayName: publicKey,
-          photoURL: `https://api.dicebear.com/7.x/identicon/svg?seed=${publicKey}`,
-        });
-
-        await createOrUpdateUser({
-          id: user.uid,
-          cryptowallet: publicKey,
-          chatIds: [],
-        });
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error
-            ? `Wallet linking failed: ${error.message}`
-            : "Unknown error during wallet linking";
-        setError(errorMessage);
-
-        setWalletPublicKey(null);
-        setIsConnected(false);
-        localStorage.removeItem("cachedWallet");
-      }
-    },
-    [auth, setError]
+    [
+      validateWalletState,
+      fetchBalance,
+      persistWalletState,
+      switchToNextRpc,
+      rpcUrls.length,
+      setError,
+    ]
   );
 
   /**
@@ -209,14 +205,6 @@ export default function useSolana() {
    */
   const connectWallet = useCallback(async () => {
     try {
-      if (!auth.currentUser) {
-        await signInAnonymously(auth).catch((error) => {
-          setError(
-            `Authentication failed: ${error.message}. Please check your internet connection.`
-          );
-        });
-      }
-
       const phantom = window.phantom?.solana;
       if (!phantom) {
         const browser = getBrowser();
@@ -266,8 +254,13 @@ export default function useSolana() {
         return;
       }
 
-      // Bind the wallet to the anonymous account
-      await linkWalletToAnonymousAccount(publicKey);
+      let user = await getCurrentUser(publicKey);
+      if (!user) {
+        user = await createOrUpdateUser(publicKey);
+      }
+
+      await fetchBalance(publicKey);
+      persistWalletState(publicKey);
     } catch (error) {
       // Handle other errors
       console.error("Wallet connection process error:", error);
@@ -283,7 +276,7 @@ export default function useSolana() {
       setIsConnected(false);
       localStorage.removeItem("cachedWallet");
     }
-  }, [linkWalletToAnonymousAccount, auth, setError]);
+  }, [setError, fetchBalance, persistWalletState]);
 
   /**
    * disconnectWallet disconnects from the wallet and clears the local state and cache.
@@ -326,7 +319,7 @@ export default function useSolana() {
     }
     try {
       const user = await getCurrentUser(cachedData.publicKey);
-      return !!user?.cryptowallet;
+      return !!user?.id;
     } catch (error) {
       localStorage.removeItem("cachedWallet");
       console.error("Error checking cached wallet:", error);

@@ -43,3 +43,11 @@ package-lock.json
 # Environment vars
 .env
 !.env.example
+
+# VsCode files
+.vscode/
+
+# Cursor IDE files
+.cursor/
+.cursorignore
+.cursorrules
