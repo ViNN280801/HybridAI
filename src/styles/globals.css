@@ -8,6 +8,7 @@
 @import "./modal/index.css";
 @import "./sidebar/index.css";
 @import "./utils/index.css";
+@import "./wallet_page/index.css";
 
 /* Import Tailwind base styles */
 @tailwind base;

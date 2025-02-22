@@ -337,21 +337,22 @@ export default function useSolana() {
       const hasCachedWallet = await checkCachedWallet();
       if (hasCachedWallet && window.phantom?.solana?.connected) {
         const publicKey = window.phantom.solana.publicKey?.toString();
-        if (publicKey) {
+        if (publicKey && !isConnected) {
+          // Only connect if not already connected
           try {
-            // Automatically restores the connection
-            await handleWalletConnection(publicKey);
-            return; // Important: stops execution after successful connection
+            await fetchBalance(publicKey);
+            setWalletPublicKey(publicKey);
+            setIsConnected(true);
+            return;
           } catch (error) {
-            console.error("Error auto-connecting:", error);
+            console.error("Error restoring wallet state:", error);
           }
         }
       }
-      // If auto-connection fails, show the authorization modal
-      setIsConnected(false);
+      // No setIsConnected(false) to preserve state across navigation
     };
     init();
-  }, [checkCachedWallet, handleWalletConnection]);
+  }, [checkCachedWallet, fetchBalance, isConnected]);
 
   /**
    * Listen for wallet connection/disconnection events (through window.solana).

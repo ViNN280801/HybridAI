@@ -1,0 +1,129 @@
+/* HybridAI/src/styles/wallet_page/wallet-page.css */
+
+.wallet-page_pageContainer {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  transition:
+    background-color 0.3s,
+    color 0.3s;
+}
+
+.wallet-page_walletContainer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 40px;
+  transition: margin-left 0.3s ease;
+}
+
+.wallet-page_sidebarCollapsed {
+  margin-left: var(--sidebar-width-collapsed);
+}
+
+.wallet-page_walletBox {
+  background: var(--secondary-color);
+  padding: 25px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1);
+  text-align: left;
+  transition: background-color 0.3s;
+}
+
+[data-theme="light"] .wallet-page_walletBox {
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.wallet-page_walletTitle {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 15px;
+  color: var(--text-color);
+}
+
+.wallet-page_walletSubtitle {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text-color);
+}
+
+.wallet-page_walletDetails {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.wallet-page_walletDescription {
+  font-size: 14px;
+  color: var(--subheading-color);
+  margin-bottom: 15px;
+}
+
+.wallet-page_walletInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+.wallet-page_balance {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.wallet-page_noWalletText {
+  color: var(--subheading-color);
+}
+
+.wallet-page_walletActions {
+  display: flex;
+  gap: 10px;
+}
+
+.wallet-page_copyIcon,
+.wallet-page_externalLink {
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+.wallet-page_copyIcon:hover,
+.wallet-page_externalLink:hover {
+  opacity: 1;
+}
+
+.wallet-page_walletButton {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  background-color: var(--gradient-start);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+}
+
+.wallet-page_walletButton:hover {
+  background-color: var(--gradient-end);
+}
+
+[data-theme="light"] .wallet-page_walletButton {
+  background-color: var(--gradient-end);
+  color: var(--text-color);
+}
+
+[data-theme="light"] .wallet-page_walletButton:hover {
+  background-color: var(--gradient-start);
+}
