@@ -19,7 +19,7 @@ export const getCurrentUser = async (wallet: string): Promise<User | null> => {
     .single();
 
   if (error && error.code !== "PGRST116") {
-    console.error("Ошибка получения пользователя:", error.message);
+    console.error("Getting user from DB error:", error.message);
   }
 
   return data as User | null;
@@ -29,7 +29,7 @@ export const createOrUpdateUser = async (wallet: string): Promise<User> => {
   const existingUser = await getCurrentUser(wallet);
 
   if (existingUser) {
-    console.log(`Пользователь ${wallet} уже зарегистрирован.`);
+    console.log(`User with wallet address ${wallet} already registered.`);
     return existingUser;
   }
 
@@ -44,7 +44,7 @@ export const createOrUpdateUser = async (wallet: string): Promise<User> => {
     .single();
 
   if (error)
-    throw new Error("Ошибка при создании пользователя: " + error.message);
+    throw new Error("Error while creating user: " + error.message);
 
   return data as User;
 };

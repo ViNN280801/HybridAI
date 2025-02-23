@@ -16,10 +16,19 @@ const WalletPage: React.FC = () => {
     walletPublicKey: walletAddress,
     solBalance,
     connectWallet,
+    disconnectWallet,
     getExplorerUrl,
   } = useSolana();
   const { error, setError } = useStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
+  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isConnected && !isLoggingOut) {
+      connectWallet();
+    }
+  }, [isConnected, connectWallet, isLoggingOut]);
+
   const handleToggleSidebar = () => setIsSidebarCollapsed((prev) => !prev);
 
   const handleCopyAddress = () => {
@@ -31,6 +40,19 @@ const WalletPage: React.FC = () => {
 
   const handleDepositClick = () => {
     setError("This feature is not yet implemented.");
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await disconnectWallet();
+      setError(null);
+      console.log("User logged out successfully");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      setError(`Logout failed: ${errorMessage}`);
+      console.error("Logout error:", err);
+    }
   };
 
   return (
@@ -104,12 +126,23 @@ const WalletPage: React.FC = () => {
               <p className="wallet-page_noWalletText">No wallet connected</p>
             )}
           </div>
-          <button
-            className="wallet-page_walletButton"
-            onClick={isConnected ? handleDepositClick : connectWallet}
-          >
-            {isConnected ? "Deposit Funds" : "Connect Wallet"}
-          </button>
+          <div className="wallet-page_buttonGroup">
+            <button
+              className="wallet-page_walletButton"
+              onClick={isConnected ? handleDepositClick : connectWallet}
+            >
+              {isConnected ? "Deposit Funds" : "Connect Wallet"}
+            </button>
+            {isConnected && (
+              <button
+                className="wallet-page_logoutButton"
+                onClick={handleLogout}
+                aria-label="Logout"
+              >
+                Logout
+              </button>
+            )}
+          </div>
         </div>
         {error && <ErrorModal message={error} />}
       </main>

@@ -12,8 +12,20 @@ import ErrorModal from "@/components/Modals/ErrorModal";
 const AuthModal: React.FC = () => {
   const { error } = useStore();
   const { isConnected, connectWallet } = useSolana();
+  const [isConnecting, setIsConnecting] = React.useState(false);
 
   if (isConnected) return null;
+
+  const handleConnect = async () => {
+    setIsConnecting(true);
+    try {
+      await connectWallet();
+    } catch (err) {
+      console.error("AuthModal connection error:", err);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
 
   return (
     <div className="auth-modal">
@@ -22,8 +34,12 @@ const AuthModal: React.FC = () => {
         <p>
           You must authenticate via your crypto wallet to access the interface.
         </p>
-        <button className="phantom-connect-btn" onClick={connectWallet}>
-          Connect Wallet
+        <button
+          className="phantom-connect-btn"
+          onClick={handleConnect}
+          disabled={isConnecting}
+        >
+          {isConnecting ? "Connecting..." : "Connect Wallet"}
         </button>
         {error && <ErrorModal message={error} />}
       </div>

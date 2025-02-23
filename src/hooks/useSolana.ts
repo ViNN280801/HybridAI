@@ -15,7 +15,7 @@ interface CachedWallet {
 
 // Constants for reuse
 const MAX_RETRY_ATTEMPTS = 3;
-const CACHE_EXPIRATION_MS = 5 * 24 * 60 * 60 * 1000; // 5 days
+const CACHE_EXPIRATION_MS = 1 * 24 * 60 * 60 * 1000; // 1 day
 
 const PHANTOM_DOWNLOAD_LINKS: Record<string, string> = {
   chrome:
@@ -149,15 +149,47 @@ export default function useSolana() {
     [handleConnectionError]
   );
 
-  const persistWalletState = useCallback((publicKey: string) => {
-    const cachedData: CachedWallet = {
-      publicKey,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem("cachedWallet", JSON.stringify(cachedData));
-    setWalletPublicKey(publicKey);
-    setIsConnected(true);
-  }, []);
+  /**
+   * disconnectWallet disconnects from the wallet and clears the local state and cache.
+   */
+  const disconnectWallet = useCallback(async () => {
+    try {
+      await phantomAdapter.disconnect();
+      setWalletPublicKey(null);
+      setIsConnected(false);
+      setSolBalance(0);
+      localStorage.removeItem("cachedWallet");
+
+      if (window.solana?.isPhantom) {
+        window.solana.emit("disconnect");
+      }
+    } catch (error) {
+      console.error("Disconnection error:", error);
+    }
+  }, [phantomAdapter]);
+
+  const persistWalletState = useCallback(
+    (publicKey: string) => {
+      const cachedData: CachedWallet = {
+        publicKey,
+        timestamp: Date.now(),
+      };
+      localStorage.setItem("cachedWallet", JSON.stringify(cachedData));
+      setWalletPublicKey(publicKey);
+      setIsConnected(true);
+
+      // Set timer to automatically disconnect the wallet
+      const timeoutId = setTimeout(() => {
+        disconnectWallet();
+        localStorage.removeItem("cachedWallet");
+        console.log("Session expired after 30 seconds");
+      }, CACHE_EXPIRATION_MS);
+
+      // Clear the timer double calling or unmounting
+      return () => clearTimeout(timeoutId);
+    },
+    [disconnectWallet]
+  );
 
   // Update handleWalletConnection with reconnection mechanism
   const handleWalletConnection = useCallback(
@@ -279,27 +311,8 @@ export default function useSolana() {
   }, [setError, fetchBalance, persistWalletState]);
 
   /**
-   * disconnectWallet disconnects from the wallet and clears the local state and cache.
-   */
-  const disconnectWallet = useCallback(async () => {
-    try {
-      await phantomAdapter.disconnect();
-      setWalletPublicKey(null);
-      setIsConnected(false);
-      setSolBalance(0);
-      localStorage.removeItem("cachedWallet");
-
-      if (window.solana?.isPhantom) {
-        window.solana.emit("disconnect");
-      }
-    } catch (error) {
-      console.error("Disconnection error:", error);
-    }
-  }, [phantomAdapter]);
-
-  /**
    * checkCachedWallet checks if there is a cached address in localStorage and
-   * if it is valid (not older than 5 days). If the data is outdated – deletes it.
+   * if it is valid. If the data is outdated – deletes it.
    */
   const checkCachedWallet = useCallback(async () => {
     const cachedString = localStorage.getItem("cachedWallet");
@@ -313,7 +326,6 @@ export default function useSolana() {
       return false;
     }
     if (Date.now() - cachedData.timestamp > CACHE_EXPIRATION_MS) {
-      // If more than 5 days have passed since the last use, delete the cache
       localStorage.removeItem("cachedWallet");
       return false;
     }
