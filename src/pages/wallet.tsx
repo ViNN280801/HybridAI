@@ -34,7 +34,6 @@ const WalletPage: React.FC = () => {
   const handleCopyAddress = () => {
     if (walletAddress) {
       navigator.clipboard.writeText(walletAddress);
-      alert("Wallet address copied to clipboard!");
     }
   };
 
