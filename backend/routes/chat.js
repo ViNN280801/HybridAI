@@ -2,39 +2,46 @@
 
 const express = require("express");
 const router = express.Router();
+const supabase = require("../../src/lib/supabase");
 
-// Dummy in-memory chat storage (в реальной реализации – Firebase или другая БД)
-let chats = [];
+// Retrieves all chats for a user using wallet address to find user_id
+router.get("/", async (req, res) => {
+  const { walletAddress } = req.query;
+  if (!walletAddress)
+    return res.status(400).json({ error: "Wallet address required" });
 
-// GET /api/chats - retrieve all chats
-router.get("/", (req, res) => {
-  res.status(200).json({ chats });
+  // Looks up user_id by wallet_address from users table
+  const { data: user, error: userError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("wallet_address", walletAddress)
+    .single();
+
+  if (userError)
+    return res
+      .status(500)
+      .json({ error: `User lookup failed: ${userError.message}` });
+  if (!user?.id) return res.status(404).json({ error: "User not found" });
+
+  const { data, error } = await supabase
+    .from("chats")
+    .select("*")
+    .eq("user_id", user.id); // Uses uuid from users table
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.status(200).json({ chats: data });
 });
 
-// POST /api/chats - create a new chat
 router.post("/", (req, res) => {
-  const { name } = req.body;
-  if (!name) return res.status(400).json({ error: "Chat name is required." });
-  const newChat = { id: Date.now(), name, messages: [] };
-  chats.push(newChat);
-  res.status(201).json({ chat: newChat });
+  res.status(400).json({ error: "Use frontend store to create chats" });
 });
 
-// PUT /api/chats/:id - update chat name
 router.put("/:id", (req, res) => {
-  const chatId = parseInt(req.params.id);
-  const { name } = req.body;
-  const chat = chats.find((c) => c.id === chatId);
-  if (!chat) return res.status(404).json({ error: "Chat not found." });
-  chat.name = name;
-  res.status(200).json({ chat });
+  res.status(400).json({ error: "Use frontend store to rename chats" });
 });
 
-// DELETE /api/chats/:id - delete a chat
 router.delete("/:id", (req, res) => {
-  const chatId = parseInt(req.params.id);
-  chats = chats.filter((c) => c.id !== chatId);
-  res.status(200).json({ message: "Chat deleted." });
+  res.status(400).json({ error: "Use frontend store to delete chats" });
 });
 
 module.exports = router;

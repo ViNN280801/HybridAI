@@ -6,6 +6,7 @@ import Image from "next/image";
 import ComingSoon from "@/components/Modals/ComingSoon";
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import useStore from "@/lib/store";
 
 type SidebarProps = {
   isCollapsed: boolean;
@@ -15,10 +16,45 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
   const { theme } = useTheme();
   const pathname = usePathname();
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const [isChatListOpen, setIsChatListOpen] = useState(false);
+  const {
+    chats,
+    activeChat,
+    createChat,
+    setActiveChat,
+    deleteChat,
+    renameChat,
+  } = useStore();
 
   useEffect(() => {
     setShowComingSoon(false);
-  }, [pathname]);
+    // Automatically opens the chat list if there are any chats available
+    if (chats.length > 0 && !isChatListOpen) {
+      setIsChatListOpen(true);
+    }
+  }, [pathname, chats, isChatListOpen]);
+  
+  // Controls the visibility of the chat list in the sidebar
+  const toggleChatList = () => {
+    setIsChatListOpen(!isChatListOpen);
+  };
+
+  // Initiates the creation of new chat sessions for user interaction
+  const handleCreateChat = async () => {
+    try {
+      await createChat();
+    } catch (error) {
+      console.error("Failed to create chat:", error);
+    }
+  };
+
+  // Manages the renaming of existing chat sessions
+  const handleRenameChat = (id: string, currentName: string) => {
+    const newName = prompt("Enter new chat name:", currentName);
+    if (newName) {
+      renameChat(id, newName);
+    }
+  };
 
   return (
     <div
@@ -44,13 +80,56 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
       </div>
 
       <div className="sidebar-menu">
-        <Link href="#" className="menu-item" id="chatsMenuItem">
-          <span className="material-symbols-rounded">chat</span>
-          <span className="menu-text">Chats</span>
-          {!isCollapsed && (
-            <span className="new-chat material-symbols-rounded">add</span>
+        <div className="chats-section">
+          <Link href="#" className="menu-item" id="chatsMenuItem">
+            <span
+              className="material-symbols-rounded toggle-chat"
+              onClick={toggleChatList}
+            >
+              {isChatListOpen ? "expand_less" : "expand_more"}
+            </span>
+            <span className="material-symbols-rounded">chat</span>
+            <span className="menu-text">Chats</span>
+            {!isCollapsed && (
+              <span
+                className="new-chat material-symbols-rounded"
+                onClick={handleCreateChat}
+              >
+                add
+              </span>
+            )}
+          </Link>
+          {!isCollapsed && isChatListOpen && (
+            <div className="chat-list">
+              {chats.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={`chat-item ${activeChat === chat.id ? "active" : ""}`}
+                >
+                  <Link
+                    href={`/chats/${chat.id}`}
+                    className="menu-text-child"
+                    onClick={() => setActiveChat(chat.id)}
+                  >
+                    {chat.name}
+                  </Link>
+                  <span
+                    className="chat-action material-symbols-rounded"
+                    onClick={() => handleRenameChat(chat.id, chat.name)}
+                  >
+                    edit
+                  </span>
+                  <span
+                    className="chat-action material-symbols-rounded"
+                    onClick={() => deleteChat(chat.id)}
+                  >
+                    delete
+                  </span>
+                </div>
+              ))}
+            </div>
           )}
-        </Link>
+        </div>
 
         <Link href="/wallet" className="menu-item">
           <span className="material-symbols-rounded">wallet</span>
@@ -77,6 +156,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
           {!isCollapsed && <span className="coming-soon-badge">Soon</span>}
         </Link>
       </div>
+
       <div className="sidebar-footer">
         <div className="social-links">
           <Link
@@ -104,7 +184,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
               src="/discord_logo.svg"
               width={48}
               height={48}
-              alt="X"
+              alt="Discord"
               className="social-icon"
             />
             <span className="social-text">Join Discord</span>
