@@ -1,3 +1,5 @@
+// HybridAI/src/components/CentralWidget.tsx
+
 import React, { useState } from "react";
 import AISelector from "@/components/AISelector";
 import ThemeToggle from "@/components/ThemeToggle";
