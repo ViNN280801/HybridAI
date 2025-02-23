@@ -1,4 +1,4 @@
-/* HybridAI/src/styles/central_widget/controls.css */
+/* HybridAI/src/styles/central_widget/header/controls.css */
 
 .central-controls,
 .wallet-header-container {
@@ -11,7 +11,11 @@
 }
 
 .central-controls {
-  left: 280px;
+  left: calc(var(--sidebar-width-expanded) + 10px);
+}
+
+.central-controls.sidebar-collapsed {
+  left: calc(var(--sidebar-width-collapsed) + 10px);
 }
 
 .ai-select {

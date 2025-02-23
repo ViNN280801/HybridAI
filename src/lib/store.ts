@@ -1,7 +1,9 @@
 // HybridAI/lib/store.ts
 
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { persist, PersistStorage, StorageValue } from "zustand/middleware";
+
+const CACHE_EXPIRATION_MS = 1 * 24 * 60 * 60 * 1000;
 
 interface Chat {
   id: string;
@@ -18,7 +20,24 @@ interface Message {
   model?: string;
 }
 
-interface StoreState {
+interface WalletState {
+  isConnected: boolean;
+  walletPublicKey: string | null;
+  solBalance: number;
+  walletTimestamp: number | null;
+}
+
+type PersistedState = {
+  chats: Chat[];
+  activeChat: string | null;
+  selectedModel: string;
+  isConnected: boolean;
+  walletPublicKey: string | null;
+  solBalance: number;
+  walletTimestamp: number | null;
+};
+
+interface StoreState extends WalletState {
   chats: Chat[];
   activeChat: string | null;
   selectedModel: string;
@@ -33,9 +52,31 @@ interface StoreState {
   ) => void;
   setSelectedModel: (model: string) => void;
   setError: (error: string | null) => void;
-  isCheckingWallet: boolean;
-  setIsCheckingWallet: (value: boolean) => void;
+  setWalletConnected: (publicKey: string, balance: number) => void;
+  disconnectWallet: () => void;
+  updateSolBalance: (balance: number) => void;
 }
+
+const walletStorage: PersistStorage<PersistedState> = {
+  getItem: (name): StorageValue<PersistedState> | null => {
+    const value = localStorage.getItem(name);
+    if (!value) return null;
+    const parsed: StorageValue<PersistedState> = JSON.parse(value);
+    const now = Date.now();
+    if (
+      parsed.state.walletTimestamp &&
+      now - parsed.state.walletTimestamp > CACHE_EXPIRATION_MS
+    ) {
+      localStorage.removeItem(name);
+      return null;
+    }
+    return parsed;
+  },
+  setItem: (name, value) => {
+    localStorage.setItem(name, JSON.stringify(value));
+  },
+  removeItem: (name) => localStorage.removeItem(name),
+};
 
 const store = create<StoreState>()(
   persist(
@@ -44,6 +85,12 @@ const store = create<StoreState>()(
       activeChat: null,
       selectedModel: "openai",
       error: null,
+
+      isConnected: false,
+      walletPublicKey: null,
+      solBalance: 0,
+      walletTimestamp: null,
+
       createChat: () => {
         const newChat: Chat = {
           id: Date.now().toString(),
@@ -88,11 +135,35 @@ const store = create<StoreState>()(
         })),
       setSelectedModel: (model) => set({ selectedModel: model }),
       setError: (error) => set({ error }),
-      isCheckingWallet: true,
-      setIsCheckingWallet: (value) => set({ isCheckingWallet: value }),
+
+      setWalletConnected: (publicKey: string, balance: number) =>
+        set({
+          isConnected: true,
+          walletPublicKey: publicKey,
+          solBalance: balance,
+          walletTimestamp: Date.now(),
+        }),
+      disconnectWallet: () =>
+        set({
+          isConnected: false,
+          walletPublicKey: null,
+          solBalance: 0,
+          walletTimestamp: null,
+        }),
+      updateSolBalance: (balance: number) => set({ solBalance: balance }),
     }),
     {
-      name: "chat-storage",
+      name: "hybridai-storage",
+      storage: walletStorage,
+      partialize: (state) => ({
+        chats: state.chats,
+        activeChat: state.activeChat,
+        selectedModel: state.selectedModel,
+        isConnected: state.isConnected,
+        walletPublicKey: state.walletPublicKey,
+        solBalance: state.solBalance,
+        walletTimestamp: state.walletTimestamp,
+      }),
     }
   )
 );

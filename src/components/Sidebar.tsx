@@ -52,7 +52,7 @@ export default function Sidebar({ isCollapsed }: SidebarProps) {
           )}
         </Link>
 
-        <Link href="wallet" className="menu-item">
+        <Link href="/wallet" className="menu-item">
           <span className="material-symbols-rounded">wallet</span>
           <span className="menu-text">Wallet</span>
         </Link>
