@@ -11,17 +11,11 @@ import useStore from "@/lib/store";
 
 const WalletPage: React.FC = () => {
   const { theme } = useTheme();
-  const {
-    isConnected,
-    walletPublicKey: walletAddress,
-    solBalance,
-    connectWallet,
-    disconnectWallet,
-    getExplorerUrl,
-  } = useSolana();
-  const { error, setError } = useStore();
+  const { connectWallet, getExplorerUrl } = useSolana();
+  const { error, setError, isConnected, walletPublicKey, solBalance } =
+    useStore();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = React.useState(false);
-  const [isLoggingOut, setIsLoggingOut] = React.useState(false);
+  const [isLoggingOut] = React.useState(false);
 
   React.useEffect(() => {
     if (!isConnected && !isLoggingOut) {
@@ -32,26 +26,14 @@ const WalletPage: React.FC = () => {
   const handleToggleSidebar = () => setIsSidebarCollapsed((prev) => !prev);
 
   const handleCopyAddress = () => {
-    if (walletAddress) {
-      navigator.clipboard.writeText(walletAddress);
+    if (walletPublicKey) {
+      navigator.clipboard.writeText(walletPublicKey);
+      alert("Wallet address copied to clipboard!");
     }
   };
 
   const handleDepositClick = () => {
     setError("This feature is not yet implemented.");
-  };
-
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      await disconnectWallet();
-      setError(null);
-      console.log("User logged out successfully");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      setError(`Logout failed: ${errorMessage}`);
-      console.error("Logout error:", err);
-    }
   };
 
   return (
@@ -82,7 +64,7 @@ const WalletPage: React.FC = () => {
             Manage your wallet connection and view your balance
           </p>
           <div className="wallet-page_walletInfo">
-            {isConnected && walletAddress ? (
+            {isConnected && walletPublicKey ? (
               <div className="wallet-page_walletDetails">
                 <span className="wallet-page_balance">
                   <Image
@@ -107,7 +89,7 @@ const WalletPage: React.FC = () => {
                     onClick={handleCopyAddress}
                   />
                   <Link
-                    href={getExplorerUrl(walletAddress)}
+                    href={getExplorerUrl(walletPublicKey)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -132,15 +114,6 @@ const WalletPage: React.FC = () => {
             >
               {isConnected ? "Deposit Funds" : "Connect Wallet"}
             </button>
-            {isConnected && (
-              <button
-                className="wallet-page_logoutButton"
-                onClick={handleLogout}
-                aria-label="Logout"
-              >
-                Logout
-              </button>
-            )}
           </div>
         </div>
         {error && <ErrorModal message={error} />}

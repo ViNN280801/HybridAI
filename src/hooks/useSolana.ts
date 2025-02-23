@@ -1,14 +1,13 @@
 // HybridAI/src/hooks/useSolana.ts
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Connection, PublicKey } from "@solana/web3.js";
+import { useEffect, useCallback, useMemo, useState } from "react";
+import { Connection, LAMPORTS_PER_SOL, PublicKey } from "@solana/web3.js";
 import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
 import useStore from "@/lib/store";
 import { SOLANA_MAINNET } from "@/config/chains";
 import {
   fetchBalance,
   validateWalletState,
-  persistWalletState,
   disconnectWalletHelper,
   checkCachedWallet,
   handleConnectionError,
@@ -35,11 +34,17 @@ declare global {
 }
 
 export default function useSolana() {
-  const { setError } = useStore();
+  const {
+    setError,
+    isConnected,
+    walletPublicKey,
+    solBalance,
+    setWalletConnected,
+    disconnectWallet: disconnectWalletState,
+    updateSolBalance,
+  } = useStore();
+
   const [currentRpcIndex, setCurrentRpcIndex] = useState(0);
-  const [solBalance, setSolBalance] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletPublicKey, setWalletPublicKey] = useState<string | null>(null);
 
   // Memoized RPC URLs from config
   const rpcUrls = useMemo(() => {
@@ -78,11 +83,12 @@ export default function useSolana() {
   const disconnectWallet = useCallback(async () => {
     await disconnectWalletHelper(
       phantomAdapter,
-      setWalletPublicKey,
-      setIsConnected,
-      setSolBalance
+      () => {},
+      () => {},
+      () => {}
     );
-  }, [phantomAdapter]);
+    disconnectWalletState();
+  }, [phantomAdapter, disconnectWalletState]);
 
   // Handles wallet connection with retry logic
   const handleWalletConnection = useCallback(
@@ -98,19 +104,8 @@ export default function useSolana() {
           return;
 
         await createOrUpdateUser(publicKey);
-        await fetchBalance(
-          connection,
-          publicKey,
-          setSolBalance,
-          setError,
-          switchToNextRpc
-        );
-        persistWalletState(
-          publicKey,
-          setWalletPublicKey,
-          setIsConnected,
-          disconnectWallet
-        );
+        const balance = await connection.getBalance(new PublicKey(publicKey));
+        setWalletConnected(publicKey, balance / LAMPORTS_PER_SOL);
       } catch (error) {
         if (
           error instanceof Error &&
@@ -124,12 +119,18 @@ export default function useSolana() {
           console.warn(`Connection failed. Switching to ${nextRpc}`);
           return handleWalletConnection(publicKey, retryCount + 1);
         }
-        setWalletPublicKey(null);
-        setIsConnected(false);
+        disconnectWalletState();
         setError(`Connection error: ${error}. Please try later.`);
       }
     },
-    [connection, rpcUrls.length, switchToNextRpc, disconnectWallet, setError]
+    [
+      connection,
+      rpcUrls.length,
+      switchToNextRpc,
+      setError,
+      setWalletConnected,
+      disconnectWalletState,
+    ]
   );
 
   // Connects to Phantom wallet
@@ -167,11 +168,9 @@ export default function useSolana() {
       setError(
         `Wallet connection failed: ${error instanceof Error ? error.message : "Unknown error"}`
       );
-      setWalletPublicKey(null);
-      setIsConnected(false);
-      localStorage.removeItem("cachedWallet");
+      disconnectWalletState();
     }
-  }, [setError, handleWalletConnection]);
+  }, [setError, handleWalletConnection, disconnectWalletState]);
 
   // Initializes wallet state on mount
   useEffect(() => {
@@ -183,17 +182,24 @@ export default function useSolana() {
           await fetchBalance(
             connection,
             publicKey,
-            setSolBalance,
+            updateSolBalance,
             setError,
             switchToNextRpc
           );
-          setWalletPublicKey(publicKey);
-          setIsConnected(true);
+          setWalletConnected(publicKey, solBalance);
         }
       }
     };
     init();
-  }, [connection, switchToNextRpc, isConnected, setError]);
+  }, [
+    connection,
+    switchToNextRpc,
+    isConnected,
+    setError,
+    setWalletConnected,
+    solBalance,
+    updateSolBalance,
+  ]);
 
   // Listens for wallet events
   useEffect(() => {
@@ -201,21 +207,17 @@ export default function useSolana() {
     if (solana?.isPhantom) {
       const handleConnect = (publicKey: PublicKey) => {
         const keyStr = publicKey.toString();
-        setWalletPublicKey(keyStr);
-        setIsConnected(true);
         fetchBalance(
           connection,
           keyStr,
-          setSolBalance,
+          updateSolBalance,
           setError,
           switchToNextRpc
-        );
+        ).then(() => setWalletConnected(keyStr, solBalance));
       };
 
       const handleDisconnect = () => {
-        setWalletPublicKey(null);
-        setIsConnected(false);
-        setSolBalance(0);
+        disconnectWalletState();
       };
 
       solana.on("connect", handleConnect);
@@ -226,7 +228,15 @@ export default function useSolana() {
         solana.off("disconnect", handleDisconnect);
       };
     }
-  }, [connection, switchToNextRpc, setError]);
+  }, [
+    connection,
+    switchToNextRpc,
+    setError,
+    setWalletConnected,
+    disconnectWalletState,
+    solBalance,
+    updateSolBalance,
+  ]);
 
   const getExplorerUrl = (address: string): string => {
     return `${SOLANA_MAINNET.blockExplorerUrls?.[0]}/address/${address}`;
@@ -242,7 +252,7 @@ export default function useSolana() {
       fetchBalance(
         connection,
         publicKey,
-        setSolBalance,
+        updateSolBalance,
         setError,
         switchToNextRpc
       ),
