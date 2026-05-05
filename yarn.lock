@@ -3592,12 +3592,12 @@
   dependencies:
     "@upstash/core-analytics" "^0.0.10"
 
-"@upstash/redis@^1.28.3", "@upstash/redis@^1.34.4":
-  version "1.34.4"
-  resolved "https://registry.yarnpkg.com/@upstash/redis/-/redis-1.34.4.tgz#293feeb8d24328addd859506b58113554708398f"
-  integrity sha512-AZx2iD5s1Pu/KCrRA7KVCffu3NSoaYnNY7N9YI7aLAYhcJfsriQKTe+8OxQWJqGqFbrvm17Lyr9HFnDLvqNpfA==
+"@upstash/redis@^1.28.3", "@upstash/redis@^1.37.0":
+  version "1.37.0"
+  resolved "https://registry.yarnpkg.com/@upstash/redis/-/redis-1.37.0.tgz#76a1efa33ab89eaf078697d5f7e5a91713e050fb"
+  integrity sha512-LqOJ3+XWPLSZ2rGSed5DYG3ixybxb8EhZu3yQqF7MdZX1wLBG/FRcI6xcUZXHy/SS7mmXWyadrud0HJHkOc+uw==
   dependencies:
-    crypto-js "^4.2.0"
+    uncrypto "^0.1.3"
 
 "@wallet-standard/app@^1.0.1", "@wallet-standard/app@^1.1.0":
   version "1.1.0"
@@ -4980,7 +4980,7 @@ crypto-browserify@^3.12.0:
     randombytes "^2.1.0"
     randomfill "^1.0.4"
 
-crypto-js@^4.1.1, crypto-js@^4.2.0:
+crypto-js@^4.1.1:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/crypto-js/-/crypto-js-4.2.0.tgz#4d931639ecdfd12ff80e8186dba6af2c2e856631"
   integrity sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==
